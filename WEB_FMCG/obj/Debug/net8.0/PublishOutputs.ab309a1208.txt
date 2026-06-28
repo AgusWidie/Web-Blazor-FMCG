@@ -1,0 +1,3 @@
+F:\FMCG_Net\WEB_FMCG\WEB_FMCG\WEB_FMCG\bin\Debug\net8.0\publish\package-lock.json
+F:\FMCG_Net\WEB_FMCG\WEB_FMCG\WEB_FMCG\bin\Debug\net8.0\publish\emcc-props.json
+F:\FMCG_Net\WEB_FMCG\WEB_FMCG\WEB_FMCG\bin\Debug\net8.0\publish\web.config

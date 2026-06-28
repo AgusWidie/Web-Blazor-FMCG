@@ -1,0 +1,599 @@
+﻿@page "/menu-role"
+@using WEB_FMCG.Services
+@using WEB_FMCG.Models
+@using Microsoft.JSInterop
+
+@inject IJSRuntime JS
+@inject IMenuService _menuService
+@inject IRoleService _roleService
+
+<style>
+    .mr-page::-webkit-scrollbar { width: 5px; height: 5px; }
+    .mr-page::-webkit-scrollbar-track { background: transparent; }
+    .mr-page::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+    .glass {
+        background: rgba(255,255,255,0.75);
+        backdrop-filter: blur(14px);
+        border: 1px solid rgba(255,255,255,0.7);
+        box-shadow: 0 4px 24px rgba(15,23,42,0.05);
+    }
+    .mr-page tbody tr { transition: all 0.18s ease; }
+    .mr-page tbody tr:hover {
+        background: linear-gradient(135deg, #fdf4ff 0%, #faf5ff 100%);
+        box-shadow: inset 3px 0 0 #a855f7;
+    }
+    .btn-shine { position: relative; overflow: hidden; }
+    .btn-shine::after {
+        content: ''; position: absolute; top: -50%; left: -60%;
+        width: 40%; height: 200%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transform: skewX(-20deg); transition: left 0.5s ease;
+    }
+    .btn-shine:hover::after { left: 120%; }
+    .field:focus {
+        border-color: #a855f7;
+        box-shadow: 0 0 0 3px rgba(168,85,247,0.1);
+    }
+    .dot-bg {
+        background-image: radial-gradient(circle, #e2e8f0 0.8px, transparent 0.8px);
+        background-size: 22px 22px;
+    }
+    .stat-card { transition: all 0.2s ease; }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(15,23,42,0.07); }
+    .orb-a {
+        position: fixed; width: 380px; height: 380px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(168,85,247,0.07), transparent 70%);
+        top: -90px; right: -90px; pointer-events: none;
+    }
+    .orb-b {
+        position: fixed; width: 320px; height: 320px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(236,72,153,0.05), transparent 70%);
+        bottom: -70px; left: -70px; pointer-events: none;
+    }
+    .act-btn { position: relative; }
+    .act-btn::before {
+        content: attr(data-tip); position: absolute; bottom: 115%; left: 50%;
+        transform: translateX(-50%) scale(0.9); background: #1e293b; color: #f8fafc;
+        font-size: 10px; padding: 3px 7px; border-radius: 5px; white-space: nowrap;
+        opacity: 0; pointer-events: none; transition: all 0.12s ease;
+    }
+    .act-btn:hover::before { opacity: 1; transform: translateX(-50%) scale(1); }
+    .pulse-active { animation: pulse 2.4s ease-in-out infinite; }
+    @@keyframes pulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.22); }
+        50% { box-shadow: 0 0 0 5px rgba(16,185,129,0); }
+    }
+    .modal-bg { animation: mFadeIn 0.18s ease; }
+    .modal-box { animation: mSlideUp 0.28s cubic-bezier(0.16,1,0.3,1); }
+    @@keyframes mFadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @@keyframes mSlideUp {
+        from { opacity: 0; transform: translateY(20px) scale(0.97); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .toast-anim { animation: toastIn 0.35s cubic-bezier(0.16,1,0.3,1), toastOut 0.3s ease 2.4s forwards; }
+    @@keyframes toastIn { from { opacity: 0; transform: translateY(16px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    @@keyframes toastOut { to { opacity: 0; transform: translateY(-8px) scale(0.95); } }
+    .page-btn { transition: all 0.15s ease; }
+    .page-btn:not(:disabled):hover {
+        background: #a855f7; color: white; border-color: #a855f7; transform: scale(1.05);
+    }
+    .page-btn:not(:disabled):active { transform: scale(0.97); }
+    .link-badge {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 500;
+        background: #f5f3ff; color: #7c3aed; border: 1px solid #ede9fe;
+    }
+</style>
+
+<div class="mr-page relative min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-fuchsia-50/20 text-gray-900 font-sans">
+
+    <div class="orb-a"></div>
+    <div class="orb-b"></div>
+    <div class="dot-bg absolute inset-0 opacity-35 pointer-events-none"></div>
+
+    <div class="relative z-10 max-w-7xl mx-auto p-6 lg:p-10 space-y-7">
+
+        <!-- HEADER -->
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-fuchsia-400 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z"/>
+                        </svg>
+                    </div>
+                    <span class="text-[11px] font-semibold text-purple-600 uppercase tracking-widest">Master Data</span>
+                </div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-slate-800 tracking-tight">Master Menu Role</h1>
+                <p class="text-sm text-slate-400">Hubungkan menu dengan role akses pengguna</p>
+            </div>
+
+            <div class="flex gap-3">
+                <button @onclick="OpenModal"
+                        class="btn-shine flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-purple-500 to-fuchsia-500 rounded-xl hover:from-purple-600 hover:to-fuchsia-600 hover:shadow-lg hover:shadow-purple-200/50 transition-all">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+                    </svg>
+                    Add Menu Role
+                </button>
+            </div>
+        </div>
+
+        <!-- STAT CARDS -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="stat-card glass rounded-2xl p-5">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"/></svg>
+                    </div>
+                    <div>
+                        <p class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Mapping</p>
+                        <p class="text-xl font-bold text-slate-800 mt-0.5">@totalCount</p>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card glass rounded-2xl p-5">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-sky-50 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-sky-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+                    </div>
+                    <div>
+                        <p class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Menu Header</p>
+                        <p class="text-xl font-bold text-sky-600 mt-0.5">@(menuHeaderList?.Count ?? 0)</p>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card glass rounded-2xl p-5">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-teal-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
+                    </div>
+                    <div>
+                        <p class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Menu Child</p>
+                        <p class="text-xl font-bold text-teal-600 mt-0.5">@(menuChildList?.Count ?? 0)</p>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card glass rounded-2xl p-5">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+                    </div>
+                    <div>
+                        <p class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Role</p>
+                        <p class="text-xl font-bold text-amber-600 mt-0.5">@(roleList?.Count ?? 0)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABLE -->
+        <div class="glass rounded-2xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100/80 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-1.5 h-5 rounded-full bg-gradient-to-b from-purple-400 to-fuchsia-400"></div>
+                    <h2 class="text-sm font-semibold text-slate-700">Daftar Menu Role</h2>
+                    <span class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">@totalCount data</span>
+                </div>
+                <div class="flex items-center gap-1.5 text-xs text-slate-400">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
+                    Halaman @currentPage dari @totalPages
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-slate-50/70">
+                            <th class="px-6 py-3.5 text-center text-[11px] font-semibold text-slate-400 uppercase tracking-wider w-28">Action</th>
+                            <th class="px-6 py-3.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Role Name</th>
+                            <th class="px-6 py-3.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Menu Header</th>
+                            <th class="px-6 py-3.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Menu Child</th>
+                        </tr>
+                    </thead>
+
+                    <tbody class="divide-y divide-slate-100/80">
+                        @if (menuRoleList != null && menuRoleList.Any())
+                        {
+                            @foreach (var data in menuRoleList)
+                            {
+                                <tr>
+                                    <td class="px-6 py-4 text-center">
+                                        <div class="flex items-center justify-center gap-1">
+                                            <button @onclick="() => Edit(data)"
+                                                    data-tip="Edit"
+                                                    class="act-btn w-8 h-8 rounded-lg bg-purple-50 hover:bg-purple-100 flex items-center justify-center transition-colors">
+                                                <svg class="w-3.5 h-3.5 text-purple-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+                                            </button>
+                                        </div>
+                                    </td>
+
+                                    <td class="px-6 py-4">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 text-xs font-semibold text-amber-700 border border-amber-100">
+                                            <svg class="w-3 h-3 text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+                                            @data.RoleName
+                                        </span>
+                                    </td>
+
+                                    <td class="px-6 py-4">
+                                        <span class="link-badge">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6z"/></svg>
+                                            @data.MenuHeaderName
+                                        </span>
+                                    </td>
+
+                                    <td class="px-6 py-4">
+                                        <span class="link-badge" style="background:#f0fdfa;color:#0f766e;border-color:#ccfbf1;">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
+                                            @data.MenuChildName
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="px-6 py-16 text-center">
+                                    <div class="flex flex-col items-center gap-3">
+                                        <div class="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center">
+                                            <svg class="w-7 h-7 text-slate-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"/></svg>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-slate-500">No menu role data available</p>
+                                            <p class="text-xs text-slate-400 mt-0.5">Klik "Add Menu Role" untuk menambahkan</p>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- PAGINATION -->
+            <div class="px-6 py-4 border-t border-slate-100/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-slate-500">
+                <div class="flex items-center gap-2">
+                    <button @onclick="PrevPage"
+                            disabled="@(currentPage == 1)"
+                            class="page-btn w-9 h-9 flex items-center justify-center border border-slate-200 rounded-lg text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+                    </button>
+                    <span class="px-1">
+                        <span class="text-slate-900 font-semibold">@currentPage</span>
+                        <span class="text-slate-400">/ @totalPages</span>
+                    </span>
+                    <button @onclick="NextPage"
+                            disabled="@(currentPage == totalPages)"
+                            class="page-btn w-9 h-9 flex items-center justify-center border border-slate-200 rounded-lg text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+                    </button>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-slate-400">Ke halaman</span>
+                    <input type="number" min="1" max="@totalPages" @bind="currentPage"
+                           class="field w-16 px-3 py-2 text-sm text-center border border-slate-200 rounded-lg bg-white/80 focus:outline-none transition-all" />
+                    <button @onclick="GoPage"
+                            class="px-4 py-2 text-sm font-semibold text-white bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors">
+                        Go
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="text-center py-3">
+            <p class="text-xs text-slate-400">Menampilkan @(menuRoleList?.Count ?? 0) dari @totalCount data menu role</p>
+        </div>
+    </div>
+
+    <!-- ADD MODAL -->
+    @if (IsModalOpen)
+    {
+        <div class="modal-bg fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+            <div class="modal-box w-full max-w-md bg-white rounded-2xl shadow-2xl shadow-slate-900/10 border border-slate-200/50 overflow-hidden">
+                <div class="relative px-7 pt-7 pb-0">
+                    <div class="absolute -top-0 -left-0 -right-0 h-1.5 bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-400"></div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-fuchsia-400 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                            </div>
+                            <div>
+                                <h2 class="text-base font-bold text-slate-800">Add New Menu Role</h2>
+                                <p class="text-xs text-slate-400 mt-0.5">Hubungkan menu dengan role akses</p>
+                            </div>
+                        </div>
+                        <button @onclick="CloseModal" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="px-7 py-6 space-y-5">
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Menu Header</label>
+                        <select @bind="selectMenuHeaderId" class="field w-full px-4 py-3 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none transition-all appearance-none cursor-pointer">
+                            <option value="">Select Menu Header</option>
+                            @foreach (var item in menuHeaderList)
+                            {
+                                <option value="@item.MenuId">@item.MenuName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Menu Child</label>
+                        <select @bind="selectMenuChildId" class="field w-full px-4 py-3 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none transition-all appearance-none cursor-pointer">
+                            <option value="">Select Menu Child</option>
+                            @foreach (var item in menuChildList)
+                            {
+                                <option value="@item.MenuChildId">@item.MenuChildName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Role</label>
+                        <select @bind="selectRoleId" class="field w-full px-4 py-3 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none transition-all appearance-none cursor-pointer">
+                            <option value="">Select Role</option>
+                            @foreach (var item in roleList)
+                            {
+                                <option value="@item.RoleId">@item.RoleName</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="px-7 py-4 bg-slate-50/50 border-t border-slate-100 flex justify-end gap-3">
+                    <button @onclick="CloseModal" class="px-5 py-2.5 text-sm font-medium text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-all">Cancel</button>
+                    <button @onclick="Save" class="btn-shine px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-purple-500 to-fuchsia-500 rounded-xl hover:from-purple-600 hover:to-fuchsia-600 hover:shadow-lg hover:shadow-purple-200/50 transition-all">Save</button>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- EDIT MODAL -->
+    @if (IsEditModalOpen)
+    {
+        <div class="modal-bg fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+            <div class="modal-box w-full max-w-md bg-white rounded-2xl shadow-2xl shadow-slate-900/10 border border-slate-200/50 overflow-hidden">
+                <div class="relative px-7 pt-7 pb-0">
+                    <div class="absolute -top-0 -left-0 -right-0 h-1.5 bg-gradient-to-r from-amber-400 via-orange-400 to-rose-400"></div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-400 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+                            </div>
+                            <div>
+                                <h2 class="text-base font-bold text-slate-800">Edit Menu Role</h2>
+                                <p class="text-xs text-slate-400 mt-0.5">Ubah mapping menu dan role</p>
+                            </div>
+                        </div>
+                        <button @onclick="CloseEditModal" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="px-7 py-6 space-y-5">
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Menu Header</label>
+                        <select @bind="selectMenuHeaderId" class="field w-full px-4 py-3 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none transition-all appearance-none cursor-pointer">
+                            <option value="">Select Menu Header</option>
+                            @foreach (var item in menuHeaderList)
+                            {
+                                <option value="@item.MenuId">@item.MenuName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Menu Child</label>
+                        <select @bind="selectMenuChildId" class="field w-full px-4 py-3 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none transition-all appearance-none cursor-pointer">
+                            <option value="">Select Menu Child</option>
+                            @foreach (var item in menuChildList)
+                            {
+                                <option value="@item.MenuChildId">@item.MenuChildName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Role</label>
+                        <select @bind="selectRoleId" class="field w-full px-4 py-3 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none transition-all appearance-none cursor-pointer">
+                            <option value="">Select Role</option>
+                            @foreach (var item in roleList)
+                            {
+                                <option value="@item.RoleId">@item.RoleName</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="px-7 py-4 bg-slate-50/50 border-t border-slate-100 flex justify-end gap-3">
+                    <button @onclick="CloseEditModal" class="px-5 py-2.5 text-sm font-medium text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-all">Cancel</button>
+                    <button @onclick="Update" class="btn-shine px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl hover:from-amber-600 hover:to-orange-600 hover:shadow-lg hover:shadow-amber-200/50 transition-all">Update</button>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- TOAST -->
+    @if (isSuccess || isError)
+    {
+        <div class="toast-anim fixed bottom-6 right-6 z-50 glass rounded-xl px-5 py-4 shadow-lg border border-slate-200/50">
+            <div class="flex items-center gap-2.5 text-sm font-medium @(isSuccess ? "text-emerald-700" : "text-red-700")">
+                @if (isSuccess)
+                {
+                    <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                }
+                else
+                {
+                    <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+                }
+                @message
+            </div>
+        </div>
+    }
+
+    <!-- LOADING -->
+    @if (isLoading)
+    {
+        <div class="fixed inset-0 z-50 bg-white/60 backdrop-blur-sm flex items-center justify-center">
+            <div class="flex flex-col items-center gap-3">
+                <div class="relative w-12 h-12">
+                    <div class="absolute inset-0 rounded-full border-4 border-slate-200"></div>
+                    <div class="absolute inset-0 rounded-full border-4 border-transparent border-t-purple-500 animate-spin"></div>
+                </div>
+                <p class="text-sm font-medium text-slate-600">Memuat data...</p>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<VMenuRole> menuRoleList = new();
+    private List<MenuHeader> menuHeaderList = new();
+    private List<MenuChild> menuChildList = new();
+    private List<Role> roleList = new();
+    private MenuRole menuRole = new();
+    private MenuRole menuRoleEdit = new();
+
+    private string selectMenuHeaderId = "";
+    private string selectMenuChildId = "";
+    private string selectRoleId = "";
+
+    private bool IsModalOpen = false;
+    private bool IsEditModalOpen = false;
+
+    private int currentPage = 1;
+    private int pageSize = 10;
+    private int totalCount = 0;
+    private int totalPages = 0;
+
+    private bool isSuccess = false;
+    private bool isError = false;
+    private string message = "";
+    private bool isLoading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        await LoadData();
+        isLoading = false;
+    }
+
+    private async Task OpenModal()
+    {
+        selectMenuHeaderId = "";
+        selectMenuChildId = "";
+        selectRoleId = "";
+
+        var resultMenuHeader = await _menuService.GetAllMenuHeader();
+        menuHeaderList = resultMenuHeader.ToList();
+
+        var resultMenuChild = await _menuService.GetAllMenuChild();
+        menuChildList = resultMenuChild.ToList();
+
+        var resultRole = await _roleService.GetAll();
+        roleList = resultRole.ToList();
+
+        IsModalOpen = true;
+    }
+
+    private void CloseModal()
+    {
+        IsModalOpen = false;
+    }
+
+    private void CloseEditModal()
+    {
+        IsEditModalOpen = false;
+    }
+
+    private async Task LoadData()
+    {
+        var result = await _menuService.GetPagedAllMenuRole(currentPage, pageSize);
+        currentPage = result.PageNumber;
+        pageSize = result.PageSize;
+        totalCount = result.TotalCount;
+        totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+        menuRoleList = result.Items.ToList();
+    }
+
+    private async Task Save()
+    {
+        menuRole.MenuIdHeader = selectMenuHeaderId;
+        menuRole.MenuIdChild = selectMenuChildId;
+        menuRole.RoleId = selectRoleId;
+
+        await _menuService.CreateMenuRole(menuRole);
+        IsModalOpen = false;
+        Clear();
+        await LoadData();
+    }
+
+    private async Task Update()
+    {
+        menuRoleEdit.MenuIdHeader = selectMenuHeaderId;
+        menuRoleEdit.MenuIdChild = selectMenuChildId;
+        menuRoleEdit.RoleId = selectRoleId;
+
+        await _menuService.UpdateMenuRole(menuRoleEdit);
+        IsEditModalOpen = false;
+        Clear();
+        await LoadData();
+    }
+
+    private async Task Edit(VMenuRole data)
+    {
+        menuRoleEdit = new MenuRole
+        {
+            MenuIdHeader = data.MenuHeaderId,
+            MenuIdChild = data.MenuChildId,
+            RoleId = data.RoleId
+        };
+
+        selectMenuHeaderId = data.MenuHeaderId;
+        selectMenuChildId = data.MenuChildId;
+        selectRoleId = data.RoleId;
+
+        var resultMenuHeader = await _menuService.GetAllMenuHeader();
+        menuHeaderList = resultMenuHeader.ToList();
+
+        var resultMenuChild = await _menuService.GetAllMenuChild();
+        menuChildList = resultMenuChild.ToList();
+
+        var resultRole = await _roleService.GetAll();
+        roleList = resultRole.ToList();
+
+        IsEditModalOpen = true;
+    }
+
+    private void Clear()
+    {
+        menuRole = new MenuRole();
+        menuRoleEdit = new MenuRole();
+        selectMenuHeaderId = "";
+        selectMenuChildId = "";
+        selectRoleId = "";
+    }
+
+    private async Task PrevPage()
+    {
+        if (currentPage > 1)
+        {
+            currentPage--;
+            await LoadData();
+        }
+    }
+
+    private async Task NextPage()
+    {
+        if (currentPage < totalPages)
+        {
+            currentPage++;
+            await LoadData();
+        }
+    }
+
+    private async Task GoPage()
+    {
+        if (currentPage >= 1 && currentPage <= totalPages)
+        {
+            await LoadData();
+        }
+    }
+}

@@ -1,0 +1,662 @@
+﻿@page "/city"
+
+@inject IJSRuntime JS
+@inject IAreaService _areaService
+@inject ICityService _cityService
+
+<style>
+    .city-page::-webkit-scrollbar { width: 5px; height: 5px; }
+    .city-page::-webkit-scrollbar-track { background: transparent; }
+    .city-page::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+    .glass {
+        background: rgba(255,255,255,0.75);
+        backdrop-filter: blur(14px);
+        border: 1px solid rgba(255,255,255,0.7);
+        box-shadow: 0 4px 24px rgba(15,23,42,0.05);
+    }
+    .city-page tbody tr { transition: all 0.18s ease; }
+    .city-page tbody tr:hover {
+        background: linear-gradient(135deg, #f0f9ff 0%, #ecfdf5 100%);
+        box-shadow: inset 3px 0 0 #0ea5e9;
+    }
+    .btn-shine { position: relative; overflow: hidden; }
+    .btn-shine::after {
+        content: ''; position: absolute; top: -50%; left: -60%;
+        width: 40%; height: 200%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transform: skewX(-20deg); transition: left 0.5s ease;
+    }
+    .btn-shine:hover::after { left: 120%; }
+    .field:focus {
+        border-color: #0ea5e9;
+        box-shadow: 0 0 0 3px rgba(14,165,233,0.1);
+    }
+    .dot-bg {
+        background-image: radial-gradient(circle, #e2e8f0 0.8px, transparent 0.8px);
+        background-size: 22px 22px;
+    }
+    .stat-card { transition: all 0.2s ease; }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(15,23,42,0.07); }
+    .orb-a {
+        position: fixed; width: 380px; height: 380px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(14,165,233,0.07), transparent 70%);
+        top: -90px; right: -90px; pointer-events: none;
+    }
+    .orb-b {
+        position: fixed; width: 320px; height: 320px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(16,185,129,0.05), transparent 70%);
+        bottom: -70px; left: -70px; pointer-events: none;
+    }
+    .act-btn { position: relative; }
+    .act-btn::before {
+        content: attr(data-tip); position: absolute; bottom: 115%; left: 50%;
+        transform: translateX(-50%) scale(0.9); background: #1e293b; color: #f8fafc;
+        font-size: 10px; padding: 3px 7px; border-radius: 5px; white-space: nowrap;
+        opacity: 0; pointer-events: none; transition: all 0.12s ease;
+    }
+    .act-btn:hover::before { opacity: 1; transform: translateX(-50%) scale(1); }
+    .pulse-active { animation: pulse 2.4s ease-in-out infinite; }
+    @@keyframes pulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.22); }
+        50% { box-shadow: 0 0 0 5px rgba(16,185,129,0); }
+    }
+    .modal-bg { animation: mFadeIn 0.18s ease; }
+    .modal-box { animation: mSlideUp 0.28s cubic-bezier(0.16,1,0.3,1); }
+    @@keyframes mFadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @@keyframes mSlideUp {
+        from { opacity: 0; transform: translateY(20px) scale(0.97); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .toast-anim { animation: toastIn 0.35s cubic-bezier(0.16,1,0.3,1), toastOut 0.3s ease 2.4s forwards; }
+    @@keyframes toastIn { from { opacity: 0; transform: translateY(16px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    @@keyframes toastOut { to { opacity: 0; transform: translateY(-8px) scale(0.95); } }
+    .page-btn { transition: all 0.15s ease; }
+    .page-btn:not(:disabled):hover {
+        background: #0ea5e9; color: white; border-color: #0ea5e9; transform: scale(1.05);
+    }
+    .page-btn:not(:disabled):active { transform: scale(0.97); }
+</style>
+
+<div class="city-page relative min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/30 to-emerald-50/20 text-gray-900 font-sans">
+
+    <div class="orb-a"></div>
+    <div class="orb-b"></div>
+    <div class="dot-bg absolute inset-0 opacity-35 pointer-events-none"></div>
+
+    <div class="relative z-10 max-w-7xl mx-auto p-6 lg:p-10 space-y-7">
+
+        <!-- HEADER -->
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-500 to-cyan-400 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3H21m-3.75 3H21"/>
+                        </svg>
+                    </div>
+                    <span class="text-[11px] font-semibold text-sky-600 uppercase tracking-widest">Master Data</span>
+                </div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-slate-800 tracking-tight">Master City Area</h1>
+                <p class="text-sm text-slate-400">Kelola data kota untuk setiap area</p>
+            </div>
+            <button @onclick="OpenModal"
+                    class="btn-shine flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-sky-500 to-cyan-500 rounded-xl hover:from-sky-600 hover:to-cyan-600 hover:shadow-lg hover:shadow-sky-200/50 transition-all">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+                </svg>
+                Add New City
+            </button>
+        </div>
+
+
+        <!-- STAT CARDS -->
+        <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="stat-card glass rounded-2xl p-5">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-sky-50 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-sky-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 0115 0z"/></svg>
+                    </div>
+                    <div>
+                        <p class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total City</p>
+                        <p class="text-xl font-bold text-slate-800 mt-0.5">@totalCount</p>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card glass rounded-2xl p-5">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <div>
+                        <p class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Active</p>
+                        <p class="text-xl font-bold text-emerald-600 mt-0.5">@(cityList?.Count(x => x.Active == 1) ?? 0)</p>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card glass rounded-2xl p-5">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-violet-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3H21m-3.75 3H21"/></svg>
+                    </div>
+                    <div>
+                        <p class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Area</p>
+                        <p class="text-xl font-bold text-violet-600 mt-0.5">@areaList.Count</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- TABLE -->
+        <div class="glass rounded-2xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100/80 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-1.5 h-5 rounded-full bg-gradient-to-b from-sky-400 to-cyan-400"></div>
+                    <h2 class="text-sm font-semibold text-slate-700">Daftar City</h2>
+                    <span class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">@totalCount data</span>
+                </div>
+                <div class="flex items-center gap-1.5 text-xs text-slate-400">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
+                    Halaman @currentPage dari @totalPages
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-slate-50/70">
+                            <th class="px-6 py-3.5 text-center text-[11px] font-semibold text-slate-400 uppercase tracking-wider w-28">Action</th>
+                            <th class="px-6 py-3.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">City ID</th>
+                            <th class="px-6 py-3.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Area Name</th>
+                            <th class="px-6 py-3.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">City Name</th>
+                            <th class="px-6 py-3.5 text-center text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody class="divide-y divide-slate-100/80">
+
+                        @if (cityList != null && cityList.Any())
+                        {
+                            @foreach (var data in cityList)
+                            {
+                                <tr>
+                                    <td class="px-6 py-4 text-center">
+                                        <div class="flex items-center justify-center gap-1">
+                                            <button @onclick="() => Edit(data)"
+                                                    data-tip="Edit"
+                                                    class="act-btn w-8 h-8 rounded-lg bg-sky-50 hover:bg-sky-100 flex items-center justify-center transition-colors">
+                                                <svg class="w-3.5 h-3.5 text-sky-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+                                            </button>
+                                        </div>
+                                    </td>
+
+                                    <td class="px-6 py-4">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-lg bg-slate-100 text-xs font-mono font-semibold text-slate-500">
+                                            #@data.CityId
+                                        </span>
+                                    </td>
+
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-6 h-6 rounded-md bg-violet-100 flex items-center justify-center flex-shrink-0">
+                                                <svg class="w-3 h-3 text-violet-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3H21m-3.75 3H21"/></svg>
+                                            </div>
+                                            <span class="text-sm text-slate-700 font-medium">@data.AreaName</span>
+                                        </div>
+                                    </td>
+
+                                    <td class="px-6 py-4 text-sm text-slate-700 font-medium">
+                                        @data.CityName
+                                    </td>
+
+                                    <td class="px-6 py-4 text-center">
+                                        @if (data.Active == 1)
+                                        {
+                                            <span class="pulse-active inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200/60">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                Active
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-slate-50 text-slate-500 rounded-full border border-slate-200/60">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                                                Inactive
+                                            </span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="px-6 py-16 text-center">
+                                    <div class="flex flex-col items-center gap-3">
+                                        <div class="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center">
+                                            <svg class="w-7 h-7 text-slate-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3H21m-3.75 3H21"/></svg>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-slate-500">No city data available</p>
+                                            <p class="text-xs text-slate-400 mt-0.5">Klik "Add New City" untuk menambahkan</p>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- PAGINATION -->
+            <div class="px-6 py-4 border-t border-slate-100/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-slate-500">
+                <div class="flex items-center gap-2">
+                    <button @onclick="PrevPage"
+                            disabled="@(currentPage == 1)"
+                            class="page-btn w-9 h-9 flex items-center justify-center border border-slate-200 rounded-lg text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+                    </button>
+                    <span class="px-1">
+                        <span class="text-slate-900 font-semibold">@currentPage</span>
+                        <span class="text-slate-400">/ @totalPages</span>
+                    </span>
+                    <button @onclick="NextPage"
+                            disabled="@(currentPage == totalPages)"
+                            class="page-btn w-9 h-9 flex items-center justify-center border border-slate-200 rounded-lg text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+                    </button>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-slate-400">Ke halaman</span>
+                    <input type="number" min="1" max="@totalPages" @bind="currentPage"
+                           class="field w-16 px-3 py-2 text-sm text-center border border-slate-200 rounded-lg bg-white/80 focus:outline-none transition-all" />
+                    <button @onclick="GoPage"
+                            class="px-4 py-2 text-sm font-semibold text-white bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors">
+                        Go
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center py-3">
+            <p class="text-xs text-slate-400">Menampilkan @(cityList?.Count ?? 0) dari @totalCount data city</p>
+        </div>
+    </div>
+
+
+    <!-- ADD MODAL -->
+    @if (IsModalOpen)
+    {
+        <div class="modal-bg fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+            <div class="modal-box w-full max-w-md bg-white rounded-2xl shadow-2xl shadow-slate-900/10 border border-slate-200/50 overflow-hidden">
+
+                <div class="relative px-7 pt-7 pb-0">
+                    <div class="absolute -top-0 -left-0 -right-0 h-1.5 bg-gradient-to-r from-sky-400 via-cyan-400 to-emerald-400"></div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-cyan-400 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                            </div>
+                            <div>
+                                <h2 class="text-base font-bold text-slate-800">Add New City</h2>
+                                <p class="text-xs text-slate-400 mt-0.5">Isi form di bawah untuk menambahkan city</p>
+                            </div>
+                        </div>
+                        <button @onclick="CloseModal"
+                                class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="px-7 py-6 space-y-5">
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Select Area</label>
+                        <select @bind="selectedArea"
+                                class="field w-full px-4 py-3 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none transition-all appearance-none cursor-pointer">
+                            <option value="">Select Area...</option>
+                            @foreach (var area in areaList)
+                            {
+                                <option value="@area.AreaId">@area.AreaName</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">City Name</label>
+                        <input type="text" @bind="city.CityName"
+                               placeholder="Masukkan nama city..."
+                               class="field w-full px-4 py-3 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none transition-all placeholder:text-slate-300" />
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</label>
+                        <select @bind="city.Active"
+                                class="field w-full px-4 py-3 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none transition-all appearance-none cursor-pointer">
+                            <option value="1">Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="px-7 py-4 bg-slate-50/50 border-t border-slate-100 flex justify-end gap-3">
+                    <button @onclick="CloseModal"
+                            class="px-5 py-2.5 text-sm font-medium text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-all">
+                        Cancel
+                    </button>
+                    <button @onclick="Save"
+                            class="btn-shine px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-sky-500 to-cyan-500 rounded-xl hover:from-sky-600 hover:to-cyan-600 hover:shadow-lg hover:shadow-sky-200/50 transition-all">
+                        Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+
+
+    <!-- EDIT MODAL -->
+    @if (IsEditModalOpen)
+    {
+        <div class="modal-bg fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+            <div class="modal-box w-full max-w-md bg-white rounded-2xl shadow-2xl shadow-slate-900/10 border border-slate-200/50 overflow-hidden">
+
+                <div class="relative px-7 pt-7 pb-0">
+                    <div class="absolute -top-0 -left-0 -right-0 h-1.5 bg-gradient-to-r from-amber-400 via-orange-400 to-rose-400"></div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-400 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+                            </div>
+                            <div>
+                                <h2 class="text-base font-bold text-slate-800">Edit City</h2>
+                                <p class="text-xs text-slate-400 mt-0.5">Ubah informasi city #@cityEdit.CityId</p>
+                            </div>
+                        </div>
+                        <button @onclick="CloseEditModal"
+                                class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="px-7 py-6 space-y-5">
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Select Area</label>
+                        <select @bind="selectedArea"
+                                class="field w-full px-4 py-3 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none transition-all appearance-none cursor-pointer">
+                            <option value="">Select Area...</option>
+                            @foreach (var area in areaList)
+                            {
+                                <option value="@area.AreaId">@area.AreaName</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">City Name</label>
+                        <input type="text" @bind="cityEdit.CityName"
+                               placeholder="Masukkan nama city..."
+                               class="field w-full px-4 py-3 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none transition-all placeholder:text-slate-300" />
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</label>
+                        <select @bind="cityEdit.Active"
+                                class="field w-full px-4 py-3 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none transition-all appearance-none cursor-pointer">
+                            <option value="1">Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="px-7 py-4 bg-slate-50/50 border-t border-slate-100 flex justify-end gap-3">
+                    <button @onclick="CloseEditModal"
+                            class="px-5 py-2.5 text-sm font-medium text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-all">
+                        Cancel
+                    </button>
+                    <button @onclick="Update"
+                            class="btn-shine px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl hover:from-amber-600 hover:to-orange-600 hover:shadow-lg hover:shadow-amber-200/50 transition-all">
+                        Update
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+
+
+    <!-- TOAST -->
+    @if (isSuccess || isError)
+    {
+        <div class="toast-anim fixed bottom-6 right-6 z-50 glass rounded-xl px-5 py-4 shadow-lg border border-slate-200/50">
+            <div class="flex items-center gap-2.5 text-sm font-medium @(isSuccess ? "text-emerald-700" : "text-red-700")">
+                @if (isSuccess)
+                {
+                    <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                }
+                else
+                {
+                    <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+                }
+                @message
+            </div>
+        </div>
+    }
+
+
+    <!-- LOADING -->
+    @if (isLoading)
+    {
+        <div class="fixed inset-0 z-50 bg-white/60 backdrop-blur-sm flex items-center justify-center">
+            <div class="flex flex-col items-center gap-3">
+                <div class="relative w-12 h-12">
+                    <div class="absolute inset-0 rounded-full border-4 border-slate-200"></div>
+                    <div class="absolute inset-0 rounded-full border-4 border-transparent border-t-sky-500 animate-spin"></div>
+                </div>
+                <p class="text-sm font-medium text-slate-600">Memuat data...</p>
+            </div>
+        </div>
+    }
+
+</div>
+
+
+@code {
+    private List<VArea> areaList = new();
+    private List<VCity> cityList = new();
+    private VArea selectedArea = new();
+    private City city = new();
+    private VCity cityEdit = new();
+
+    private int currentPage = 1;
+    private int pageSize = 10;
+    private int totalCount = 0;
+    private int pageNumber = 1;
+    private int totalPages = 0;
+    private string token = "";
+    private string regionId = "";
+    private string selectedAreaId = "";
+
+    private bool IsModalOpen = false;
+    private bool IsEditModalOpen = false;
+
+    private bool isSuccess = false;
+    private bool isError = false;
+    private string message = "";
+
+    private bool isLoading = false;
+
+    private async Task OpenModal()
+    {
+        City city = new(); // Reset form
+        IsModalOpen = true;
+
+        var result = await _areaService.GetAll();
+        areaList = result.ToList();
+
+        StateHasChanged();
+
+    }
+
+    private async Task<IEnumerable<VArea>> SearchArea(string searchText)
+    {
+        return await Task.FromResult(areaList.Where(x => x.AreaName.Contains(searchText, StringComparison.OrdinalIgnoreCase)));
+    }
+
+    private void CloseModal()
+    {
+        IsModalOpen = false;
+    }
+
+    private void CloseEditModal()
+    {
+        IsEditModalOpen = false;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        await LoadData();
+        isLoading = false;
+    }
+
+    private async Task LoadData()
+    {
+
+        var result = await _cityService.GetPaged(currentPage, pageSize);
+        pageNumber = result.PageNumber;
+        pageSize = result.PageSize;
+        totalCount = result.TotalCount;
+        totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+        cityList = result.Items;
+    }
+
+    private async Task LoadDataArea()
+    {
+
+        var result = await _areaService.GetAll();
+        areaList = result.ToList();
+    }
+
+    private async Task Save()
+    {
+
+        city.AreaId = selectedAreaId;
+        await _cityService.Create(city);
+        IsModalOpen = false;
+        Clear();
+        await LoadData();
+
+        StateHasChanged();
+    }
+
+    private async Task Update()
+    {
+        city.AreaId = selectedAreaId;
+        city.CityId = cityEdit.CityId;
+        city.CityName = cityEdit.CityName;
+        city.Active = cityEdit.Active;
+
+        await _cityService.Update(city);
+        IsEditModalOpen = false;
+        Clear();
+        await LoadData();
+
+        StateHasChanged();
+    }
+
+    private async Task ExportExcel()
+    {
+
+        var result = await _cityService.GetAll();
+        var fileByte = _cityService.GenerateExportCity(result.ToList());
+        var fileBase64 = Convert.ToBase64String(fileByte);
+
+        await JS.InvokeVoidAsync(
+             "downloadFile",
+             "City.xlsx",
+             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+             fileBase64
+         );
+    }
+
+    // protected override async Task OnAfterRenderAsync(bool firstRender)
+    // {
+    //     if (firstRender)
+    //     {
+    //         var result = _cityService.GetAll(token, regionId).Result.ToList();
+    //         var fileByte = _cityService.GenerateExportCity(result);
+
+    //         await JS.InvokeVoidAsync(
+    //              "downloadFile",
+    //              "City.xlsx",
+    //              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    //              fileByte
+    //          );
+    //     }
+    // }
+
+    async void Edit(VCity city)
+    {
+
+        cityEdit.AreaId = selectedAreaId;
+        cityEdit.CityId = city.CityId;
+        cityEdit.CityName = city.CityName;
+        cityEdit.Active = city.Active;
+
+        var resultArea = _areaService.GetAll();
+        areaList = resultArea.Result;
+        IsEditModalOpen = true;
+
+        StateHasChanged();
+    }
+
+  
+    void Clear()
+    {
+        List<VArea> areaList = new();
+        List<VCity> cityList = new();
+        VArea selectedArea = new();
+        City city = new();
+        VCity cityEdit = new();
+    }
+
+    async void NextPage()
+    {
+        if (currentPage < totalPages)
+        {
+            currentPage++;
+            await LoadData();
+        }
+    }
+
+    async void PrevPage()
+    {
+        if (currentPage > 1)
+        {
+            currentPage--;
+            await LoadData();
+        }
+    }
+
+    async void GoPage()
+    {
+        // if (currentPage < totalPages)
+        // {
+        //     currentPage++;
+        //     LoadData();
+        // }
+
+
+        // if (currentPage > 1)
+        // {
+        //     currentPage--;
+        //     LoadData();
+        // }
+
+        isLoading = true;
+        await LoadData();
+        isLoading = false;
+    }
+}

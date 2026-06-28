@@ -1,0 +1,491 @@
+﻿@page "/menu-child"
+@inject IJSRuntime JS
+@inject IMenuService _menuService
+
+<style>
+    .mc-page::-webkit-scrollbar { width: 5px; height: 5px; }
+    .mc-page::-webkit-scrollbar-track { background: transparent; }
+    .mc-page::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+    .glass {
+        background: rgba(255,255,255,0.75);
+        backdrop-filter: blur(14px);
+        border: 1px solid rgba(255,255,255,0.7);
+        box-shadow: 0 4px 24px rgba(15,23,42,0.05);
+    }
+    .mc-page tbody tr { transition: all 0.18s ease; }
+    .mc-page tbody tr:hover {
+        background: linear-gradient(135deg, #f0f9ff 0%, #ecfdf5 100%);
+        box-shadow: inset 3px 0 0 #14b8a6;
+    }
+    .btn-shine { position: relative; overflow: hidden; }
+    .btn-shine::after {
+        content: ''; position: absolute; top: -50%; left: -60%;
+        width: 40%; height: 200%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transform: skewX(-20deg); transition: left 0.5s ease;
+    }
+    .btn-shine:hover::after { left: 120%; }
+    .dot-bg {
+        background-image: radial-gradient(circle, #e2e8f0 0.8px, transparent 0.8px);
+        background-size: 22px 22px;
+    }
+    .stat-card { transition: all 0.2s ease; }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(15,23,42,0.07); }
+    .orb-a {
+        position: fixed; width: 380px; height: 380px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(14,165,233,0.07), transparent 70%);
+        top: -90px; right: -90px; pointer-events: none;
+    }
+    .orb-b {
+        position: fixed; width: 320px; height: 320px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(16,185,129,0.05), transparent 70%);
+        bottom: -70px; left: -70px; pointer-events: none;
+    }
+    .pulse-active { animation: pulse 2.4s ease-in-out infinite; }
+    @@keyframes pulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.22); }
+        50% { box-shadow: 0 0 0 5px rgba(16,185,129,0); }
+    }
+    .modal-bg { animation: mFadeIn 0.18s ease; }
+    .modal-box { animation: mSlideUp 0.28s cubic-bezier(0.16,1,0.3,1); }
+    @@keyframes mFadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @@keyframes mSlideUp {
+        from { opacity: 0; transform: translateY(20px) scale(0.97); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .page-btn { transition: all 0.15s ease; }
+    .page-btn:not(:disabled):hover {
+        background: #14b8a6; color: white; border-color: #14b8a6; transform: scale(1.05);
+    }
+    .page-btn:not(:disabled):active { transform: scale(0.97); }
+</style>
+
+<div class="mc-page relative min-h-screen bg-gradient-to-br from-slate-50 via-teal-50/30 to-sky-50/20 text-gray-900 font-sans">
+
+    <div class="orb-a"></div>
+    <div class="orb-b"></div>
+    <div class="dot-bg absolute inset-0 opacity-35 pointer-events-none"></div>
+
+    <div class="relative z-10 max-w-7xl mx-auto p-6 lg:p-10 space-y-7">
+
+        <!-- HEADER -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-400 flex items-center justify-center shadow-sm shadow-teal-200/50">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/>
+                        </svg>
+                    </div>
+                    <span class="text-[11px] font-semibold text-teal-600 uppercase tracking-widest">Master Data</span>
+                </div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-slate-800 tracking-tight">Master Menu Child</h1>
+                <p class="text-sm text-slate-400">Kelola sub-menu pada sistem</p>
+            </div>
+
+            <div class="flex gap-3 w-full sm:w-auto">
+                <button @onclick="OpenModal"
+                        class="btn-shine flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-teal-600 to-emerald-500 rounded-xl hover:from-teal-700 hover:to-emerald-600 hover:shadow-lg hover:shadow-teal-200/50 transition-all">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+                    </svg>
+                    Add Menu
+                </button>
+            </div>
+        </div>
+
+        <!-- STAT CARDS -->
+        <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="stat-card glass rounded-2xl p-5">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-teal-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
+                    </div>
+                    <div>
+                        <p class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Menu</p>
+                        <p class="text-xl font-bold text-slate-800 mt-0.5">@totalCount</p>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card glass rounded-2xl p-5">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <div>
+                        <p class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Active</p>
+                        <p class="text-xl font-bold text-emerald-600 mt-0.5">@(menuChildList?.Count(x => x.Active == 1) ?? 0)</p>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card glass rounded-2xl p-5">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536-3.536m-10.972-2.12l3.536-3.536m0 5.656l-3.536 3.536m0 5.656l10.972-2.12"/></svg>
+                    </div>
+                    <div>
+                        <p class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Inactive</p>
+                        <p class="text-xl font-bold text-slate-500 mt-0.5">@(menuChildList?.Count(x => x.Active != 1) ?? 0)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABLE -->
+        <div class="glass rounded-2xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100/80 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-1.5 h-5 rounded-full bg-gradient-to-b from-teal-400 to-emerald-400"></div>
+                    <h2 class="text-sm font-semibold text-slate-700">Daftar Menu</h2>
+                    <span class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">@totalCount data</span>
+                </div>
+                <div class="flex items-center gap-1.5 text-xs text-slate-400">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
+                    Halaman @currentPage dari @totalPages
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-50/70 text-slate-400 text-[11px] uppercase tracking-wider">
+                        <tr>
+                            <th class="px-6 py-3.5 text-center font-semibold w-28">Action</th>
+                            <th class="px-6 py-3.5 text-left font-semibold">Menu ID</th>
+                            <th class="px-6 py-3.5 text-left font-semibold">Menu Name</th>
+                            <th class="px-6 py-3.5 text-center font-semibold w-32">Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody class="divide-y divide-slate-100/80">
+                        @if (menuChildList != null && menuChildList.Any())
+                        {
+                            @foreach (var data in menuChildList)
+                            {
+                                <tr>
+                                    <td class="px-6 py-4 text-center">
+                                        <button @onclick="() => Edit(data)"
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-teal-700 bg-teal-50 border border-teal-100 rounded-lg hover:bg-teal-100 transition-colors duration-150">
+                                            <svg class="w-3.5 h-3.5 text-teal-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+                                            Edit
+                                        </button>
+                                    </td>
+
+                                    <td class="px-6 py-4">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-lg bg-slate-100 text-xs font-mono font-semibold text-slate-500">
+                                            #@data.MenuChildId
+                                        </span>
+                                    </td>
+
+                                    <td class="px-6 py-4 text-sm text-slate-700 font-semibold">
+                                        @data.MenuChildName
+                                    </td>
+
+                                    <td class="px-6 py-4 text-center">
+                                        @if (data.Active == 1)
+                                        {
+                                            <span class="pulse-active inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200/60">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                Active
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-slate-50 text-slate-500 rounded-full border border-slate-200/60">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                                                Inactive
+                                            </span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="px-6 py-16 text-center">
+                                    <div class="flex flex-col items-center gap-3">
+                                        <div class="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center">
+                                            <svg class="w-7 h-7 text-slate-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-slate-500">No menu data available</p>
+                                            <p class="text-xs text-slate-400 mt-0.5">Klik "Add Menu" untuk menambahkan</p>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- PAGINATION -->
+            <div class="px-6 py-4 border-t border-slate-100/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-slate-500">
+                <div class="flex items-center gap-2">
+                    <button @onclick="PrevPage"
+                            disabled="@(currentPage == 1)"
+                            class="page-btn w-9 h-9 flex items-center justify-center border border-slate-200 rounded-lg text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+                    </button>
+                    <span class="px-1">
+                        <span class="text-slate-900 font-semibold">@currentPage</span>
+                        <span class="text-slate-400">/ @totalPages</span>
+                    </span>
+                    <button @onclick="NextPage"
+                            disabled="@(currentPage == totalPages)"
+                            class="page-btn w-9 h-9 flex items-center justify-center border border-slate-200 rounded-lg text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+                    </button>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-slate-400">Ke halaman</span>
+                    <input type="number" min="1" max="@totalPages" @bind="currentPage"
+                           class="w-16 px-3 py-2 text-sm text-center border border-slate-200 rounded-lg bg-white/80 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all" />
+                    <button @onclick="GoPage"
+                            class="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-teal-600 to-emerald-500 rounded-lg hover:from-teal-700 hover:to-emerald-600 shadow-sm shadow-teal-200 hover:shadow-md transition-all">
+                        Go
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="text-center py-3">
+            <p class="text-xs text-slate-400">Menampilkan @(menuChildList?.Count ?? 0) dari @totalCount data menu</p>
+        </div>
+    </div>
+
+    <!-- ADD MODAL -->
+    @if (IsModalOpen)
+    {
+        <div class="modal-bg fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+            <div class="modal-box w-full max-w-md bg-white rounded-2xl shadow-2xl shadow-slate-900/10 border border-slate-200/50 overflow-hidden">
+
+                <div class="relative px-7 pt-7 pb-0">
+                    <div class="absolute -top-0 -left-0 -right-0 h-1.5 bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-400"></div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-400 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                            </div>
+                            <div>
+                                <h2 class="text-base font-bold text-slate-800">Add New Menu</h2>
+                                <p class="text-xs text-slate-400 mt-0.5">Isi form di bawah untuk menambahkan</p>
+                            </div>
+                        </div>
+                        <button @onclick="CloseModal"
+                                class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="px-7 py-6 space-y-5">
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Menu Name <span class="text-red-400">*</span></label>
+                        <input type="text" @bind="menuChild.MenuChildName"
+                               placeholder="Masukkan nama menu..."
+                               class="w-full px-4 py-3 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all placeholder:text-slate-300" />
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</label>
+                        <select @bind="menuChild.Active"
+                                class="w-full px-4 py-3 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all appearance-none cursor-pointer">
+                            <option value="1">Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="px-7 py-4 bg-slate-50/50 border-t border-slate-100 flex justify-end gap-3">
+                    <button @onclick="CloseModal"
+                            class="px-5 py-2.5 text-sm font-medium text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-all">
+                        Cancel
+                    </button>
+                    <button @onclick="Save"
+                            class="btn-shine px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-teal-600 to-emerald-500 rounded-xl hover:from-teal-700 hover:to-emerald-600 hover:shadow-lg hover:shadow-teal-200/50 transition-all">
+                        Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+
+
+    <!-- EDIT MODAL -->
+    @if (IsEditModalOpen)
+    {
+        <div class="modal-bg fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+            <div class="modal-box w-full max-w-md bg-white rounded-2xl shadow-2xl shadow-slate-900/10 border border-slate-200/50 overflow-hidden">
+
+                <div class="relative px-7 pt-7 pb-0">
+                    <div class="absolute -top-0 -left-0 -right-0 h-1.5 bg-gradient-to-r from-amber-400 via-orange-400 to-rose-400"></div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-400 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+                            </div>
+                            <div>
+                                <h2 class="text-base font-bold text-slate-800">Edit Menu</h2>
+                                <p class="text-xs text-slate-400 mt-0.5">Ubah informasi #@menuChild.MenuChildId</p>
+                            </div>
+                        </div>
+                        <button @onclick="CloseEditModal"
+                                class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="px-7 py-6 space-y-5">
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Menu Name <span class="text-red-400">*</span></label>
+                        <input type="text" @bind="menuChild.MenuChildName"
+                               placeholder="Masukkan nama menu..."
+                               class="w-full px-4 py-3 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all placeholder:text-slate-300" />
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</label>
+                        <select @bind="menuChild.Active"
+                                class="w-full px-4 py-3 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all appearance-none cursor-pointer">
+                            <option value="1">Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="px-7 py-4 bg-slate-50/50 border-t border-slate-100 flex justify-end gap-3">
+                    <button @onclick="CloseEditModal"
+                            class="px-5 py-2.5 text-sm font-medium text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-all">
+                        Cancel
+                    </button>
+                    <button @onclick="Update"
+                            class="btn-shine px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl hover:from-amber-600 hover:to-orange-600 hover:shadow-lg hover:shadow-amber-200/50 transition-all">
+                        Update
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+
+
+    <!-- LOADING -->
+    @if (isLoading)
+    {
+        <div class="fixed inset-0 z-50 bg-white/60 backdrop-blur-sm flex items-center justify-center">
+            <div class="flex flex-col items-center gap-3 bg-white px-8 py-6 rounded-2xl shadow-xl border border-slate-100">
+                <div class="relative w-10 h-10">
+                    <div class="absolute inset-0 rounded-full border-4 border-slate-200"></div>
+                    <div class="absolute inset-0 rounded-full border-4 border-transparent border-t-teal-500 animate-spin"></div>
+                </div>
+                <p class="text-sm font-medium text-slate-600">Memuat data...</p>
+            </div>
+        </div>
+    }
+
+</div>
+
+
+@code {
+    private List<MenuChild> menuChildList = new();
+    private MenuChild menuChild = new();
+    private bool IsModalOpen = false;
+    private bool IsEditModalOpen = false;
+
+    private int currentPage = 1;
+    private int pageSize = 10;
+    private int totalCount = 0;
+    private int totalPages = 0;
+    private bool isLoading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        await LoadData();
+        isLoading = false;
+    }
+
+    private async Task OpenModal()
+    {
+        menuChild = new MenuChild();
+        IsModalOpen = true;
+    }
+
+    private void CloseModal()
+    {
+        IsModalOpen = false;
+    }
+
+    private void CloseEditModal()
+    {
+        IsEditModalOpen = false;
+    }
+
+    private async Task LoadData()
+    {
+        var result = await _menuService.GetPagedMenuChild(currentPage, pageSize);
+        currentPage = result.PageNumber;
+        pageSize = result.PageSize;
+        totalCount = result.TotalCount;
+        totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+        menuChildList = result.Items.ToList();
+    }
+
+    private async Task Save()
+    {
+        await _menuService.CreateMenuChild(menuChild);
+        IsModalOpen = false;
+        Clear();
+        await LoadData();
+    }
+
+    private async Task Update()
+    {
+        await _menuService.UpdateMenuChild(menuChild);
+        IsEditModalOpen = false;
+        Clear();
+        await LoadData();
+    }
+
+    private async Task Edit(MenuChild menu)
+    {
+        menuChild = new MenuChild
+        {
+            MenuChildId = menu.MenuChildId,
+            MenuChildName = menu.MenuChildName,
+            Active = menu.Active
+        };
+        IsEditModalOpen = true;
+    }
+
+    private void Clear()
+    {
+        menuChild = new MenuChild();
+    }
+
+    private async Task PrevPage()
+    {
+        if (currentPage > 1)
+        {
+            currentPage--;
+            await LoadData();
+        }
+    }
+
+    private async Task NextPage()
+    {
+        if (currentPage < totalPages)
+        {
+            currentPage++;
+            await LoadData();
+        }
+    }
+
+    private async Task GoPage()
+    {
+        if (currentPage >= 1 && currentPage <= totalPages)
+        {
+            await LoadData();
+        }
+    }
+}

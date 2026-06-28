@@ -1,0 +1,223 @@
+is_global = true
+build_property.EnableAotAnalyzer = 
+build_property.EnableSingleFileAnalyzer = 
+build_property.EnableTrimAnalyzer = false
+build_property.IncludeAllContentForSelfExtract = 
+build_property.TargetFramework = net8.0
+build_property.TargetFrameworkIdentifier = .NETCoreApp
+build_property.TargetFrameworkVersion = v8.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = 
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = false
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = browser
+build_property.RootNamespace = WEB_FMCG
+build_property.RootNamespace = WEB_FMCG
+build_property.ProjectDir = F:\FMCG_Net\WEB_FMCG\WEB_FMCG\WEB_FMCG\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = false
+build_property.RazorLangVersion = 8.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = F:\FMCG_Net\WEB_FMCG\WEB_FMCG\WEB_FMCG
+build_property._RazorSourceGeneratorDebug = 
+build_property.EffectiveAnalysisLevelStyle = 8.0
+build_property.EnableCodeStyleSeverity = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/App.razor]
+build_metadata.AdditionalFiles.TargetPath = QXBwLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Layout/LoginLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XExvZ2luTGF5b3V0LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Layout/MainLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XE1haW5MYXlvdXQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/Area/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXJlYVxJbmRleC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/AttendanceLeave/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXR0ZW5kYW5jZUxlYXZlXEluZGV4LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/AttendanceOverTime/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXR0ZW5kYW5jZU92ZXJUaW1lXEluZGV4LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/AttendancePermit/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXR0ZW5kYW5jZVBlcm1pdFxJbmRleC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/Attendance/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXR0ZW5kYW5jZVxJbmRleC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/City/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ2l0eVxJbmRleC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/Department/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRGVwYXJ0bWVudFxJbmRleC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/Division/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRGl2aXNpb25cSW5kZXgucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/Home.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSG9tZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/LogDevice/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTG9nRGV2aWNlXEluZGV4LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/Login/Login.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTG9naW5cTG9naW4ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/Login/Login_Backup.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTG9naW5cTG9naW5fQmFja3VwLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/LogSalesTracking/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTG9nU2FsZXNUcmFja2luZ1xJbmRleC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/LogStock/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTG9nU3RvY2tcSW5kZXgucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/Mechanisme/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTWVjaGFuaXNtZVxJbmRleC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/MenuChild/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTWVudUNoaWxkXEluZGV4LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/MenuHeader/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTWVudUhlYWRlclxJbmRleC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/MenuRole/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTWVudVJvbGVcSW5kZXgucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/OrderProduct/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcT3JkZXJQcm9kdWN0XEluZGV4LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/PhotoProductCocCashier/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGhvdG9Qcm9kdWN0Q29jQ2FzaGllclxJbmRleC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/PhotoProductHomeShelf/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGhvdG9Qcm9kdWN0SG9tZVNoZWxmXEluZGV4LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/PhotoProductPriceCompetitor/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGhvdG9Qcm9kdWN0UHJpY2VDb21wZXRpdG9yXEluZGV4LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/PhotoProductSecondaryDisplay/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGhvdG9Qcm9kdWN0U2Vjb25kYXJ5RGlzcGxheVxJbmRleC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/PhotoPromotion/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGhvdG9Qcm9tb3Rpb25cSW5kZXgucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/Position/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUG9zaXRpb25cSW5kZXgucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/ProductCategory/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUHJvZHVjdENhdGVnb3J5XEluZGV4LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/ProductPricing/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUHJvZHVjdFByaWNpbmdcSW5kZXgucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/ProductStock/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUHJvZHVjdFN0b2NrXEluZGV4LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/Product/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUHJvZHVjdFxJbmRleC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/RegionStore/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUmVnaW9uU3RvcmVcSW5kZXgucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/Region/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUmVnaW9uXEluZGV4LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/RentalDisplay/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUmVudGFsRGlzcGxheVxJbmRleC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/Role/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUm9sZVxJbmRleC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/SalesMap/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2FsZXNNYXBcSW5kZXgucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/Sales/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2FsZXNcSW5kZXgucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/Select2.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2VsZWN0Mi5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/SideBar - backup.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2lkZUJhciAtIGJhY2t1cC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/SideBar.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2lkZUJhci5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/StoreVisit/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3RvcmVWaXNpdFxJbmRleC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/Store/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3RvcmVcSW5kZXgucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/SubmissionLeave/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3VibWlzc2lvbkxlYXZlXEluZGV4LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/SurveyQuetion/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3VydmV5UXVldGlvblxJbmRleC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/SurveyResponse/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3VydmV5UmVzcG9uc2VcSW5kZXgucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Pages/Survey/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3VydmV5XEluZGV4LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = X0ltcG9ydHMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/FMCG_Net/WEB_FMCG/WEB_FMCG/WEB_FMCG/Layout/AlertBox.razor]
+build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XEFsZXJ0Qm94LnJhem9y
+build_metadata.AdditionalFiles.CssScope = b-ag39opzve8

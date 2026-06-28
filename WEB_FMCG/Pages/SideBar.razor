@@ -1,0 +1,314 @@
+﻿@inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Components.Routing
+@using WEB_FMCG.Models
+@using WEB_FMCG.Services
+
+@inject NavigationManager Nav
+@inject IMenuService _menuService
+@inject IJSRuntime JS
+@inject AuthService AuthService
+@inject ILogoutService _logoutService
+
+<div class="sidebar-container @($"flex flex-col h-screen {(isCollapsed ? "w-[78px]" : "w-[280px]")} transition-all duration-300")">
+
+    <!-- HEADER LOGO -->
+    <div class="p-5 flex items-center justify-between border-b border-slate-200/50 shrink-0">
+        @if (!isCollapsed)
+        {
+            <div class="flex items-center gap-3 overflow-hidden">
+                <!-- NEW ELEGANT SVG LOGO -->
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-sky-300/40 shrink-0 transform -rotate-3 hover:rotate-0 transition-transform duration-300">
+                    <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007M8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                    </svg>
+                </div>
+                <div class="whitespace-nowrap transition-opacity duration-300">
+                    <h2 class="text-xl font-black text-slate-800 tracking-tight leading-none">FMCG</h2>
+                    <p class="text-[10px] text-sky-500 font-bold uppercase tracking-[0.2em] mt-0.5">Enterprise Suite</p>
+                </div>
+            </div>
+        }
+        else
+        {
+            <!-- LOGO ICON SAAT TERCOLLAPSED -->
+            <div class="w-11 h-11 mx-auto rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-sky-300/40 shrink-0 transform -rotate-3">
+                <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007M8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                </svg>
+            </div>
+        }
+
+        <button @onclick="ToggleSidebar" class="p-2 rounded-xl hover:bg-slate-100 transition-colors shrink-0">
+            <svg class="w-5 h-5 text-slate-500 transition-transform duration-300 @(isCollapsed ? "rotate-180" : "")"
+                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+        </button>
+    </div>
+
+    <!-- MENU LIST -->
+    <nav class="flex-1 px-3 space-y-1.5 overflow-y-auto custom-scrollbar mt-4 pb-4">
+        
+        @foreach (var hardMenu in new[]
+                {
+                new { Name = "Dashboard Chart", Href = "/dashboard-chart", Icon = "Dashboard" },
+                new { Name = "Dashboard Sales Map", Href = "/sales-map", Icon = "Dashboard" }
+                })
+        {
+            var isActive = IsActive(hardMenu.Href.TrimStart('/'));
+            <div class="relative group">
+                @if (isCollapsed && !string.IsNullOrEmpty(hardMenu.Name))
+                {
+                    <div class="sidebar-tooltip absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-1.5 bg-slate-800 text-white text-xs font-medium rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity shadow-lg whitespace-nowrap z-50">
+                        @hardMenu.Name
+                    </div>
+                }
+                <NavLink href="@hardMenu.Href"
+                         class="@($"flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 {(isActive ? "sidebar-item-active" : "sidebar-item-idle")}")"
+                         Match="NavLinkMatch.All">
+                    <span class="shrink-0 transition-all duration-200">
+                        @GetHeaderIcon(hardMenu.Icon)
+                    </span>
+                    <span class="text-sm font-medium whitespace-nowrap transition-all duration-300 @(isCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100 w-auto")">
+                        @hardMenu.Name
+                    </span>
+                </NavLink>
+            </div>
+        }
+
+        <div class="my-3 border-t border-slate-200/50 mx-2"></div>
+
+        @foreach (var header in lstMenuHeaderRoleId)
+        {
+            var headerActive = IsActive(header.MenuHeaderName.ToLower());
+            var isExp = IsExpanded(header.MenuHeaderId);
+            
+            <div class="relative group">
+                @if (isCollapsed && !string.IsNullOrEmpty(header.MenuHeaderName))
+                {
+                    <div class="sidebar-tooltip absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-1.5 bg-slate-800 text-white text-xs font-medium rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity shadow-lg whitespace-nowrap z-50">
+                        @header.MenuHeaderName
+                    </div>
+                }
+
+                <button @onclick="@(() => ToggleHeader(header.MenuHeaderId))"
+                        class="@($"w-full flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 text-left {(headerActive ? "sidebar-item-active" : "sidebar-item-idle")}")">
+                    <span class="shrink-0 transition-all duration-200">
+                        @GetHeaderIcon(header.MenuHeaderName)
+                    </span>
+                    <span class="text-sm font-medium whitespace-nowrap transition-all duration-300 @(isCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100 w-auto")">
+                        @header.MenuHeaderName
+                    </span>
+                    
+                    @if (!isCollapsed)
+                    {
+                        <svg class="w-4 h-4 text-slate-400 ml-auto transition-transform duration-300 shrink-0 @(isExp ? "rotate-90 text-sky-600" : "")"
+                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    }
+                </button>
+
+                @if (!isCollapsed)
+                {
+                    <div class="overflow-hidden transition-all duration-300 ease-in-out"
+                         style="max-height: @(isExp ? $"{lstMenuUser.Count(i => i.MenuHeaderId == header.MenuHeaderId) * 42}px" : "0px"); opacity: @(isExp ? "1" : "0");">
+                        <div class="mt-1 ml-4 pl-4 border-l-2 border-slate-200 space-y-0.5">
+                            @foreach (var item in lstMenuUser.Where(i => i.MenuHeaderId == header.MenuHeaderId))
+                            {
+                                var childActive = IsActive(item.ControllerName.TrimStart('/'));
+                                <NavLink href="@item.ControllerName"
+                                         class="@($"flex items-center gap-2 py-2 px-3 rounded-lg text-sm transition-all duration-200 {(childActive ? "sidebar-child-active" : "sidebar-child-idle")}")"
+                                         Match="NavLinkMatch.All">
+                                    <span class="w-1.5 h-1.5 rounded-full shrink-0 @(childActive ? "bg-sky-500" : "bg-slate-300 group-hover:bg-sky-400")"></span>
+                                    <span>@item.MenuChildName</span>
+                                </NavLink>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </nav>
+
+    <!-- FOOTER DECORATION & USER -->
+    <div class="mt-auto shrink-0 border-t border-slate-200/50 bg-gradient-to-t from-slate-50/50 to-transparent">
+        
+        <!-- ELEGANT STATS WIDGET -->
+        @if (!isCollapsed)
+        {
+            <div class="px-5 py-4 grid grid-cols-2 gap-2">
+                <div class="bg-gradient-to-br from-sky-50 to-cyan-50 rounded-xl p-3 border border-sky-100/50">
+                    <p class="text-[10px] text-slate-400 font-semibold uppercase">Sync Status</p>
+                    <div class="flex items-center gap-1.5 mt-1">
+                        <span class="w-2 h-2 bg-emerald-400 rounded-full shadow-sm shadow-emerald-200 animate-pulse"></span>
+                        <span class="text-xs font-bold text-emerald-700">Online</span>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-br from-slate-50 to-gray-100 rounded-xl p-3 border border-slate-100/50">
+                    <p class="text-[10px] text-slate-400 font-semibold uppercase">Ver. App</p>
+                    <p class="text-xs font-bold text-slate-700 mt-1">v2.1.0</p>
+                </div>
+            </div>
+        }
+
+        <!-- USER PROFILE -->
+        <div class="p-4 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-sky-500 to-cyan-400 flex items-center justify-center text-white text-xs font-bold shadow shrink-0 ring-2 ring-white">
+                @UserInitials
+            </div>
+
+            <div class="flex-1 min-w-0 transition-all duration-300 @(isCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100 w-auto")">
+                <p class="text-sm font-semibold text-slate-800 truncate">FMCG</p>
+                <p class="text-[11px] text-slate-400 uppercase truncate">@userName</p>
+            </div>
+
+            @if (!isCollapsed)
+            {
+                <button @onclick="Logout" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-colors shrink-0">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg>
+                    Logout
+                </button>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .sidebar-container {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-right: 1px solid rgba(226, 232, 240, 0.8);
+        box-shadow: 4px 0 24px rgba(15, 23, 42, 0.04);
+    }
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+    .sidebar-item-idle { color: #64748b; }
+    .sidebar-item-idle:hover {
+        background: linear-gradient(135deg, #f0f9ff 0%, #ecfdf5 100%);
+        color: #0f766e;
+        box-shadow: inset 3px 0 0 #14b8a6;
+        transform: scale(1.01);
+    }
+    .sidebar-item-active {
+        background: linear-gradient(135deg, #f0f9ff 0%, #ecfdf5 100%);
+        color: #0f766e;
+        font-weight: 600;
+        box-shadow: inset 3px 0 0 #14b8a6;
+    }
+    .sidebar-item-active svg path { stroke: #14b8a6; }
+
+    .sidebar-child-idle { color: #64748b; }
+    .sidebar-child-idle:hover { background: #f1f5f9; color: #0ea5e9; }
+    .sidebar-child-idle:hover span:first-child { background-color: #0ea5e9 !important; }
+    .sidebar-child-active { background: #f0fdfa; color: #0f766e; font-weight: 600; }
+    .sidebar-child-active span:first-child { background-color: #14b8a6 !important; box-shadow: 0 0 6px rgba(20, 184, 166, 0.4); }
+
+    .sidebar-tooltip { animation: tooltipFade 0.15s ease; }
+    @@keyframes tooltipFade { from { opacity: 0; transform: translateX(-5px) translateY(-50%); } to { opacity: 1; transform: translateX(0) translateY(-50%); } }
+</style>
+
+
+@code {
+    private bool isCollapsed = false;
+    private void ToggleSidebar() => isCollapsed = !isCollapsed;
+
+    private int? expandedHeaderId = null;
+    private void ToggleHeader(int headerId) => expandedHeaderId = (expandedHeaderId == headerId) ? null : headerId;
+    private bool IsExpanded(int headerId) => expandedHeaderId == headerId;
+
+    private string userName = ""; 
+    private string UserInitials => GetInitials(userName);
+
+    private string GetInitials(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "";
+        var parts = name.Split(new char[] { ' ', '.' }, StringSplitOptions.RemoveEmptyEntries);
+        return string.Concat(parts.Select(p => p[0])).ToUpper();
+    }
+
+    private RenderFragment GetHeaderIcon(string name) => builder =>
+    {
+        string path = name?.ToLower() switch
+        {
+            "dashboard" => "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6",
+            "home" => "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6",
+            "master" => "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4",
+            "config" => "M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37.996.996 2.89.09 2.89-1.109 0-2.16-.93-2.16-2.16m0 0c.93 0 2.16.93 2.16 2.16m-2.16-2.16V6.823M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
+            "attendance" => "M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z",
+            "store visit" => "M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75.75v3.75m0-5.625v5.625m0-5.625H9.75m1.5 5.625V15m0-3.75h3.75m0 0h.008v.008h-.008v-.008zm0 3.75h.008v.008H12v-.008zM12 12.75h.008v.008H12v-.008z",
+            "transaction" => "M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z",
+            "calendar" => "M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5",
+            "report" => "M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z",
+            "log data" => "M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z",
+            _ => "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+        };
+
+        builder.OpenElement(0, "svg");
+        builder.AddAttribute(1, "class", "w-[20px] h-[20px]");
+        builder.AddAttribute(2, "fill", "none");
+        builder.AddAttribute(3, "stroke", "currentColor");
+        builder.AddAttribute(4, "stroke-width", "1.5");
+        builder.AddAttribute(5, "stroke-linecap", "round");
+        builder.AddAttribute(6, "stroke-linejoin", "round");
+        builder.AddAttribute(7, "viewBox", "0 0 24 24");
+        
+        builder.OpenElement(8, "path");
+        builder.AddAttribute(9, "d", path);
+        builder.CloseElement();
+        
+        builder.CloseElement();
+    };
+
+    public class SidebarMenuHeader { public string Title { get; set; } = ""; public List<SidebarMenuItem> Items { get; set; } = new(); }
+    public class SidebarMenuItem { public string Title { get; set; } = ""; public string Url { get; set; } = ""; public string Icon { get; set; } = ""; }
+
+    private List<VRoleMenuHeader> lstMenuHeaderRoleId = new();
+    private List<VRoleMenuUser> lstMenuUser = new();
+    private string? token;
+    private string? roleId;
+
+    private bool IsActive(string pagePath) => NavigationManager.ToBaseRelativePath(NavigationManager.Uri).ToLower().Contains(pagePath.ToLower());
+
+    protected override async Task OnInitializedAsync()
+    {
+        var token = await AuthService.GetTokenAsync();
+        if (string.IsNullOrWhiteSpace(token)) throw new InvalidOperationException("User not logged in");
+
+        var roleId = AuthService.CurrentSession?.RoleId;
+        if (string.IsNullOrWhiteSpace(roleId)) { Console.WriteLine("RoleId kosong"); return; }
+
+        lstMenuHeaderRoleId = (await _menuService.GetMenuHeaderRoleId(roleId)).ToList();
+        lstMenuUser = (await _menuService.GetMenuUser(roleId)).ToList();
+
+        userName = await AuthService.GetUserNameAsync();
+        if (string.IsNullOrWhiteSpace(userName)) throw new InvalidOperationException("User not logged in");
+    }
+
+    void Clear()
+    {
+        List<VRoleMenuHeader> lstMenuHeaderRoleId = new();
+        List<VRoleMenuUser> lstMenuUser = new();
+    }
+
+    private Dictionary<string, bool> expandedHeaders = new();
+    private void ToggleHeader(string headerId) { if (expandedHeaders.ContainsKey(headerId)) expandedHeaders[headerId] = !expandedHeaders[headerId]; else expandedHeaders[headerId] = true; }
+    private bool IsExpanded(string headerId) => expandedHeaders.ContainsKey(headerId) && expandedHeaders[headerId];
+
+    private async Task Logout()
+    {
+        LoginRequest loginReq = new LoginRequest();
+        userName = await AuthService.GetUserNameAsync();
+        if (string.IsNullOrWhiteSpace(userName)) throw new InvalidOperationException("User not logged in");
+        
+        loginReq.UserName = userName;
+        loginReq.DeviceId = "DSWfsnrwh7428";
+        loginReq.Password = "DSWfsnrwh7428";
+
+        var apiRes = await _logoutService.LogoutUser(loginReq);
+        if (apiRes.Success == true) Nav.NavigateTo("/login"); 
+    }
+}

@@ -1,0 +1,12 @@
+is_global = true
+build_property.EnableAotAnalyzer = false
+build_property.EnableSingleFileAnalyzer = false
+build_property.EnableTrimAnalyzer = false
+build_property.IncludeAllContentForSelfExtract = 
+build_property.RootNamespace = WEB_FMCG
+build_property.ProjectDir = F:\FMCG_Net\WEB_FMCG\WEB_FMCG\WEB_FMCG\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = false
+build_property.CsWinRTUseWindowsUIXamlProjections = false
+build_property.EffectiveAnalysisLevelStyle = 
+build_property.EnableCodeStyleSeverity = 

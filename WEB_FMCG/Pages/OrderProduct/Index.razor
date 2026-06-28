@@ -1,0 +1,437 @@
+﻿@page "/order-product"
+@using WEB_FMCG.Help
+@using WEB_FMCG.Services
+@using WEB_FMCG.Models
+@using Microsoft.JSInterop
+@using System.Globalization
+
+@inject IJSRuntime JS
+@inject IOrderProductService _orderProductService
+
+<style>
+    .op-page::-webkit-scrollbar { width: 5px; height: 5px; }
+    .op-page::-webkit-scrollbar-track { background: transparent; }
+    .op-page::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+    .glass {
+        background: rgba(255,255,255,0.75);
+        backdrop-filter: blur(14px);
+        border: 1px solid rgba(255,255,255,0.7);
+        box-shadow: 0 4px 24px rgba(15,23,42,0.05);
+    }
+    .op-page tbody tr { transition: all 0.18s ease; }
+    .op-page tbody tr:hover {
+        background: linear-gradient(135deg, #fffbeb 0%, #fefce8 100%);
+        box-shadow: inset 3px 0 0 #f59e0b;
+    }
+    .btn-shine { position: relative; overflow: hidden; }
+    .btn-shine::after {
+        content: ''; position: absolute; top: -50%; left: -60%;
+        width: 40%; height: 200%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transform: skewX(-20deg); transition: left 0.5s ease;
+    }
+    .btn-shine:hover::after { left: 120%; }
+    .field:focus {
+        border-color: #f59e0b;
+        box-shadow: 0 0 0 3px rgba(245,158,11,0.1);
+    }
+    .dot-bg {
+        background-image: radial-gradient(circle, #e2e8f0 0.8px, transparent 0.8px);
+        background-size: 22px 22px;
+    }
+    .stat-card { transition: all 0.2s ease; }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(15,23,42,0.07); }
+    .orb-a {
+        position: fixed; width: 380px; height: 380px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(245,158,11,0.07), transparent 70%);
+        top: -90px; right: -90px; pointer-events: none;
+    }
+    .orb-b {
+        position: fixed; width: 320px; height: 320px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(16,185,129,0.05), transparent 70%);
+        bottom: -70px; left: -70px; pointer-events: none;
+    }
+    .pulse-active { animation: pulse 2.4s ease-in-out infinite; }
+    @@keyframes pulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.22); }
+        50% { box-shadow: 0 0 0 5px rgba(16,185,129,0); }
+    }
+    .modal-bg { animation: mFadeIn 0.18s ease; }
+    .modal-box { animation: mSlideUp 0.28s cubic-bezier(0.16,1,0.3,1); }
+    @@keyframes mFadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @@keyframes mSlideUp {
+        from { opacity: 0; transform: translateY(20px) scale(0.97); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .toast-anim { animation: toastIn 0.35s cubic-bezier(0.16,1,0.3,1), toastOut 0.3s ease 2.4s forwards; }
+    @@keyframes toastIn { from { opacity: 0; transform: translateY(16px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    @@keyframes toastOut { to { opacity: 0; transform: translateY(-8px) scale(0.95); } }
+    .page-btn { transition: all 0.15s ease; }
+    .page-btn:not(:disabled):hover {
+        background: #f59e0b; color: white; border-color: #f59e0b; transform: scale(1.05);
+    }
+    .page-btn:not(:disabled):active { transform: scale(0.97); }
+    .price-cell {
+        font-variant-numeric: tabular-nums;
+        font-feature-settings: "tnum";
+    }
+    .ref-img {
+        transition: transform 0.2s ease;
+        cursor: pointer;
+    }
+    .ref-img:hover {
+        transform: scale(2.5);
+        z-index: 50;
+        position: relative;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        border-radius: 8px;
+    }
+</style>
+
+<div class="op-page relative min-h-screen bg-gradient-to-br from-slate-50 via-amber-50/30 to-emerald-50/20 text-gray-900 font-sans">
+
+    <div class="orb-a"></div>
+    <div class="orb-b"></div>
+    <div class="dot-bg absolute inset-0 opacity-35 pointer-events-none"></div>
+
+    <div class="relative z-10 max-w-7xl mx-auto p-6 lg:p-10 space-y-7">
+
+        <!-- HEADER -->
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-yellow-400 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/>
+                        </svg>
+                    </div>
+                    <span class="text-[11px] font-semibold text-amber-600 uppercase tracking-widest">Transaction</span>
+                </div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-slate-800 tracking-tight">Order Products</h1>
+                <p class="text-sm text-slate-400">Real-time transaction monitoring</p>
+            </div>
+
+            <div class="flex flex-wrap gap-3">
+                <!-- Filter: Month -->
+                <div class="relative">
+                    <select @bind="month" @bind:event="onchange" @bind:after="FilterChanged"
+                            class="field appearance-none w-36 pl-3 pr-8 py-2.5 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none cursor-pointer">
+                        @foreach (var m in monthList)
+                        {
+                            <option value="@m.Key">@m.Value</option>
+                        }
+                    </select>
+                    <svg class="w-3.5 h-3.5 absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <!-- Filter: Year -->
+                <div class="relative">
+                    <select @bind="year" @bind:event="onchange" @bind:after="FilterChanged"
+                            class="field appearance-none w-24 pl-3 pr-8 py-2.5 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none cursor-pointer">
+                        @foreach (var y in yearList)
+                        {
+                            <option value="@y">@y</option>
+                        }
+                    </select>
+                    <svg class="w-3.5 h-3.5 absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <!-- Export -->
+                <button @onclick="ExportExcel"
+                        class="flex items-center gap-2 px-5 py-2.5 text-sm font-medium border border-gray-200 text-gray-700 bg-white rounded-xl hover:bg-gray-50 hover:shadow-sm transition-all duration-200">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    Export
+                </button>
+            </div>
+        </div>
+
+        <!-- STAT CARDS -->
+        <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="stat-card glass rounded-2xl p-5">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
+                    </div>
+                    <div>
+                        <p class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Orders</p>
+                        <p class="text-xl font-bold text-slate-800 mt-0.5">@totalCount</p>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card glass rounded-2xl p-5">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125"/></svg>
+                    </div>
+                    <div>
+                        <p class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Qty</p>
+                        <p class="text-xl font-bold text-emerald-600 mt-0.5">@(orderProductList?.Sum(x => x.Qty) ?? 0)</p>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card glass rounded-2xl p-5">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-sky-50 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-sky-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <div>
+                        <p class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Value</p>
+                        <p class="text-xl font-bold text-sky-600 mt-0.5">@(orderProductList?.Sum(x => x.Price)?.ToString("C0", new CultureInfo("id-ID")) ?? "Rp0")</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABLE -->
+        <div class="glass rounded-2xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100/80 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-1.5 h-5 rounded-full bg-gradient-to-b from-amber-400 to-yellow-400"></div>
+                    <h2 class="text-sm font-semibold text-slate-700">Daftar Transaksi</h2>
+                    <span class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">@totalCount data</span>
+                </div>
+                <div class="flex items-center gap-1.5 text-xs text-slate-400">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
+                    @monthList[month] @year
+                    &middot; Halaman @currentPage dari @totalPages
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-slate-50/70">
+                            <th class="px-6 py-3.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Timeline & Sales</th>
+                            <th class="px-6 py-3.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Store Destination</th>
+                            <th class="px-6 py-3.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Product Details</th>
+                            <th class="px-6 py-3.5 text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Valuation (IDR)</th>
+                            <th class="px-6 py-3.5 text-center text-[11px] font-semibold text-slate-400 uppercase tracking-wider w-28">Reference</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100/80">
+                        @if (orderProductList != null && orderProductList.Any())
+                        {
+                            @foreach (var data in orderProductList)
+                            {
+                                <tr class="hover:bg-amber-50/40 transition cursor-pointer">
+                                    <td class="px-6 py-4">
+                                        <div class="flex flex-col">
+                                            <span class="font-medium text-slate-800">@((data.OrderDate.HasValue) ? data.OrderDate.Value.ToString("dd MMM yyyy") : "-")</span>
+                                            <span class="text-slate-400 text-xs font-semibold mt-0.5">@data.SalesName</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-slate-600">@data.StoreName</td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex flex-col">
+                                            <span class="font-medium text-slate-800">@data.ProductName</span>
+                                            <span class="inline-flex items-center gap-1 mt-1 text-xs text-slate-400">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/></svg>
+                                                Qty: @data.Qty
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <span class="price-cell font-semibold text-slate-800">@Convert.ToInt32(data.Price).ToString("C0", new CultureInfo("id-ID"))</span>
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        @if (!string.IsNullOrEmpty(data.FilePhoto))
+                                        {
+                                            <img src="data:image/jpeg;base64,@data.FilePhoto" class="ref-img w-10 h-10 object-cover rounded-lg border border-slate-200/60" alt="Reference" />
+                                        }
+                                        else
+                                        {
+                                            <span class="text-slate-400 text-xs">No Ref</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="px-6 py-16 text-center">
+                                    <div class="flex flex-col items-center gap-3">
+                                        <div class="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center">
+                                            <svg class="w-7 h-7 text-slate-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-slate-500">No transaction data available</p>
+                                            <p class="text-xs text-slate-400 mt-0.5">Pilih periode bulan dan tahun untuk melihat data</p>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- PAGINATION -->
+            <div class="px-6 py-4 border-t border-slate-100/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-slate-500">
+                <div class="flex items-center gap-2">
+                    <button @onclick="PrevPage"
+                            disabled="@(currentPage == 1)"
+                            class="page-btn w-9 h-9 flex items-center justify-center border border-slate-200 rounded-lg text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+                    </button>
+                    <span class="px-1">
+                        <span class="text-slate-900 font-semibold">@currentPage</span>
+                        <span class="text-slate-400">/ @totalPages</span>
+                    </span>
+                    <button @onclick="NextPage"
+                            disabled="@(currentPage == totalPages)"
+                            class="page-btn w-9 h-9 flex items-center justify-center border border-slate-200 rounded-lg text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+                    </button>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-slate-400">Ke halaman</span>
+                    <input type="number" min="1" max="@totalPages" @bind="currentPage"
+                           class="field w-16 px-3 py-2 text-sm text-center border border-slate-200 rounded-lg bg-white/80 focus:outline-none transition-all" />
+                    <button @onclick="GoPage"
+                            class="px-4 py-2 text-sm font-semibold text-white bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors">
+                        Go
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="text-center py-3">
+            <p class="text-xs text-slate-400">Menampilkan @(orderProductList?.Count ?? 0) dari @totalCount data transaksi</p>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    @if (isSuccess || isError)
+    {
+        <div class="toast-anim fixed bottom-6 right-6 z-50 glass rounded-xl px-5 py-4 shadow-lg border border-slate-200/50">
+            <div class="flex items-center gap-2.5 text-sm font-medium @(isSuccess ? "text-emerald-700" : "text-red-700")">
+                @if (isSuccess)
+                {
+                    <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                }
+                else
+                {
+                    <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+                }
+                @message
+            </div>
+        </div>
+    }
+
+    <!-- LOADING -->
+    @if (isLoading)
+    {
+        <div class="fixed inset-0 z-50 bg-white/60 backdrop-blur-sm flex items-center justify-center">
+            <div class="flex flex-col items-center gap-3 bg-white px-8 py-6 rounded-2xl shadow-xl border border-slate-100">
+                <div class="relative w-12 h-12">
+                    <div class="absolute inset-0 rounded-full border-4 border-slate-200"></div>
+                    <div class="absolute inset-0 rounded-full border-4 border-transparent border-t-amber-500 animate-spin"></div>
+                </div>
+                <p class="text-sm font-medium text-slate-600">Memuat data...</p>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<VOrderProduct> orderProductList = new();
+
+    private int currentPage = 1;
+    private int pageSize = 10;
+    private int totalCount = 0;
+    private int totalPages = 0;
+
+    private int month = 0;
+    private int year = 0;
+
+    private bool isLoading = false;
+    private bool isSuccess = false;
+    private bool isError = false;
+    private string message = "";
+
+    private List<int> yearList = new();
+    private Dictionary<int, string> monthList = new()
+    {
+        { 1, "January" }, { 2, "February" }, { 3, "March" },
+        { 4, "April" }, { 5, "May" }, { 6, "June" },
+        { 7, "July" }, { 8, "August" }, { 9, "September" },
+        { 10, "October" }, { 11, "November" }, { 12, "December" }
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        int currentYear = DateTime.Now.Year;
+        month = DateTime.Now.Month;
+        for (int i = currentYear - 2; i <= currentYear + 2; i++)
+        {
+            yearList.Add(i);
+        }
+        year = currentYear;
+
+        isLoading = true;
+        await LoadData();
+        isLoading = false;
+    }
+
+    private async Task FilterChanged()
+    {
+        currentPage = 1;
+        isLoading = true;
+        await LoadData();
+        isLoading = false;
+    }
+
+    private async Task LoadData()
+    {
+        var result = await _orderProductService.GetPaged(currentPage, month, year);
+        currentPage = result.PageNumber;
+        pageSize = result.PageSize;
+        totalCount = result.TotalCount;
+        totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+        orderProductList = result.Items.ToList();
+    }
+
+    private async Task ExportExcel()
+    {
+        var result = await _orderProductService.OrderProductExport(month, year);
+        var fileByte = _orderProductService.GenerateExportOrderProduct(result.ToList());
+        var fileBase64 = Convert.ToBase64String(fileByte);
+
+        await JS.InvokeVoidAsync(
+            "downloadFile",
+            "OrderProducts.xlsx",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            fileBase64
+        );
+    }
+
+    private async Task PrevPage()
+    {
+        if (currentPage > 1)
+        {
+            currentPage--;
+            isLoading = true;
+            await LoadData();
+            isLoading = false;
+        }
+    }
+
+    private async Task NextPage()
+    {
+        if (currentPage < totalPages)
+        {
+            currentPage++;
+            isLoading = true;
+            await LoadData();
+            isLoading = false;
+        }
+    }
+
+    private async Task GoPage()
+    {
+        if (currentPage >= 1 && currentPage <= totalPages)
+        {
+            isLoading = true;
+            await LoadData();
+            isLoading = false;
+        }
+    }
+}

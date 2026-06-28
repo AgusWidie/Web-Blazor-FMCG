@@ -1,0 +1,368 @@
+﻿@page "/menu-header"
+@inject IJSRuntime JS
+@inject IMenuService _menuService
+
+
+<div class="relative min-h-screen bg-white text-gray-900 font-sans p-8 space-y-8">
+
+    <!-- HEADER -->
+    <div class="flex items-center justify-between">
+        <div>
+            
+            <h1 class="text-xl font-semibold tracking-tight mt-1">
+                Master Menu Header
+            </h1>
+        </div>
+
+        <div class="flex items-center gap-3">
+           
+            <button @onclick="OpenModal"
+                    class="px-4 py-1.5 text-sm bg-gray-900 text-white rounded hover:bg-gray-700">
+                Add
+            </button>
+        </div>
+    </div>
+
+
+    <!-- TABLE -->
+    <div class="border-t border-b border-gray-200">
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+
+                <thead>
+                    <tr class="text-xs text-gray-500">
+                        <th class="px-4 py-3 text-center w-24">Action</th>
+                        <th class="px-4 py-3 text-left">Menu ID</th>
+                        <th class="px-4 py-3 text-left">Menu Name</th>
+                        <th class="px-4 py-3 text-left">Active</th>
+                    </tr>
+                </thead>
+
+                <tbody class="divide-y divide-gray-100">
+                    @foreach (var data in menuHeaderList)
+                    {
+                        <tr class="hover:bg-gray-50 transition">
+
+                            <td class="px-4 py-3 text-center space-x-3">
+                                <button @onclick="() => Edit(data)"
+                                        class="text-sm text-gray-600 hover:text-gray-900">
+                                    Edit
+                                </button>
+
+                            </td>
+
+                            <td class="px-4 py-3 font-medium">
+                                #@data.MenuId
+                            </td>
+
+                            <td class="px-4 py-3">
+                                @(data.MenuName ?? "—")
+                            </td>
+
+                            <td class="px-4 py-3">
+                                @if (data.Active == 1)
+                                {
+                                    <span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-700 rounded">
+                                        Active
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-500 rounded">
+                                        Inactive
+                                    </span>
+                                }
+                            </td>
+
+                        </tr>
+                    }
+                </tbody>
+
+            </table>
+        </div>
+
+
+        <!-- PAGINATION -->
+        <div class="flex items-center justify-between py-4 text-sm text-gray-500">
+
+            <div class="flex items-center gap-4">
+                <button @onclick="PrevPage"
+                        disabled="@(currentPage == 1)"
+                        class="px-2 py-1 border border-gray-200 rounded hover:bg-gray-50 disabled:opacity-40">
+                    Prev
+                </button>
+
+                <span>
+                    Page <span class="text-gray-900 font-medium">@currentPage</span> of @totalPages
+                </span>
+
+                <button @onclick="NextPage"
+                        disabled="@(currentPage == totalPages)"
+                        class="px-2 py-1 border border-gray-200 rounded hover:bg-gray-50 disabled:opacity-40">
+                    Next
+                </button>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <input type="number"
+                       min="1"
+                       max="@totalPages"
+                       @bind="currentPage"
+                       class="w-14 px-2 py-1 border border-gray-200 rounded text-center focus:outline-none focus:ring-1 focus:ring-gray-300" />
+
+                <button @onclick="GoPage"
+                        class="px-3 py-1 bg-gray-900 text-white rounded hover:bg-gray-700">
+                    Go
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- ADD MODAL -->
+    @if (IsModalOpen)
+    {
+        <div class="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+            <div class="w-full max-w-lg bg-white border border-gray-200 rounded-lg shadow-lg">
+
+                <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                    <h2 class="text-sm font-semibold text-gray-900">
+                        Add Menu Header
+                    </h2>
+                    <button @onclick="CloseModal"
+                            class="text-gray-400 hover:text-gray-700 text-sm">
+                        ✕
+                    </button>
+                </div>
+
+                <div class="px-6 py-6 space-y-5">
+
+                    <div>
+                        <label class="text-xs text-gray-400">Header Name</label>
+                        <input @bind="menuHeader.MenuName"
+                               class="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:border-gray-400" />
+                    </div>
+
+                    <div>
+                        <label class="text-xs text-gray-400">Status</label>
+                        <select @bind="menuHeader.Active"
+                                class="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:border-gray-400">
+                            <option value="1">Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-4">
+                    <button @onclick="CloseModal"
+                            class="text-sm text-gray-500 hover:text-gray-900">
+                        Cancel
+                    </button>
+
+                    <button @onclick="Save"
+                            class="px-4 py-2 text-sm bg-black text-white rounded-md hover:bg-gray-800">
+                        Save
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    }
+
+
+    <!-- EDIT MODAL -->
+    @if (IsEditModalOpen)
+    {
+        <div class="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+            <div class="w-full max-w-lg bg-white border border-gray-200 rounded-lg shadow-lg">
+
+                <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                    <h2 class="text-sm font-semibold text-gray-900">
+                        Edit Menu Header
+                    </h2>
+                    <button @onclick="CloseEditModal"
+                            class="text-gray-400 hover:text-gray-700 text-sm">
+                        ✕
+                    </button>
+                </div>
+
+                <div class="px-6 py-6 space-y-5">
+
+                    <input type="hidden" @bind="menuHeader.MenuId" />
+
+                    <div>
+                        <label class="text-xs text-gray-400">Header Name</label>
+                        <input @bind="menuHeader.MenuName"
+                               class="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:border-gray-400" />
+                    </div>
+
+                    <div>
+                        <label class="text-xs text-gray-400">Status</label>
+                        <select @bind="menuHeader.Active"
+                                class="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:border-gray-400">
+                            <option value="1">Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-4">
+                    <button @onclick="CloseEditModal"
+                            class="text-sm text-gray-500 hover:text-gray-900">
+                        Cancel
+                    </button>
+
+                    <button @onclick="Update"
+                            class="px-4 py-2 text-sm bg-black text-white rounded-md hover:bg-gray-800">
+                        Update
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    }
+
+
+    @if (isLoading)
+    {
+        <div class="absolute inset-0 bg-white/70 flex items-center justify-center rounded-lg">
+            <div class="flex items-center gap-2 text-sm text-gray-600">
+                <div class="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                Loading...
+            </div>
+        </div>
+    }
+
+</div>
+
+
+        @code {
+        private List<MenuHeader> menuHeaderList = new();
+        private MenuHeader menuHeader = new();
+        private bool IsModalOpen = false;
+        private bool IsEditModalOpen = false;
+
+        private int currentPage = 1;
+        private int pageSize = 10;
+        private int totalCount = 0;
+        private int pageNumber = 0;
+        private int totalPages = 0;
+        private string token = "";
+
+        private bool isSuccess = false;
+        private bool isError = false;
+        private string message = "";
+        private bool isLoading = false;
+
+        public Index()
+        {
+        }
+
+        protected override async Task OnInitializedAsync()
+        {
+        isLoading = true; 
+        await LoadData();
+        isLoading = false;
+    }
+
+    private async Task OpenModal()
+    {
+        Area area = new(); // Reset form
+        IsModalOpen = true;
+    }
+
+    private void CloseModal()
+    {
+        IsModalOpen = false;
+    }    
+
+    private void CloseEditModal()
+    {
+        IsEditModalOpen = false;
+    }
+
+    private async Task LoadData()
+    {
+
+        var result = _menuService.GetPagedMenuHeader(currentPage, pageSize);
+        pageNumber = result.Result.PageNumber;
+        pageSize = result.Result.PageSize;
+        totalCount = result.Result.TotalCount;
+        totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+    }
+
+
+    private async Task Save()
+    {
+        await _menuService.CreateMenuHeader(menuHeader);
+        IsModalOpen = false;
+        Clear();
+        await LoadData();
+
+        StateHasChanged();
+    }
+
+    private async Task Update()
+    {
+        await _menuService.UpdateMenuHeader(menuHeader);
+        IsEditModalOpen = false;
+        Clear();
+        await LoadData();
+
+        StateHasChanged();
+    }
+     
+    async void Edit(MenuHeader menu)
+    {
+
+        menuHeader.MenuId = menu.MenuId;
+        menuHeader.MenuName = menu.MenuName;
+        menuHeader.Active = menu.Active;
+
+        IsEditModalOpen = true;
+    }
+
+  
+    void Clear()
+    {
+        MenuHeader menuHeader = new();
+        List<MenuHeader> menuHeaderList = new();
+    }
+
+    async void NextPage()
+    {
+        if (currentPage < totalPages)
+        {
+            currentPage++;
+            await LoadData();
+        }
+    }
+
+    async void PrevPage()
+    {
+        if (currentPage > 1)
+        {
+            currentPage--;
+            await LoadData();
+        }
+    }
+
+    async void GoPage()
+    {
+        if (currentPage < totalPages)
+        {
+            currentPage++;
+            await LoadData();
+        }
+
+
+        if (currentPage > 1)
+        {
+            currentPage--;
+            await LoadData();
+        }
+    }
+}

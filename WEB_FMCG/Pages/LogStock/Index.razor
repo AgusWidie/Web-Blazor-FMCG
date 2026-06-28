@@ -1,0 +1,341 @@
+﻿@page "/log-stock"
+@using WEB_FMCG.Help
+@using WEB_FMCG.Services
+@using WEB_FMCG.Models
+@using Microsoft.JSInterop
+
+@inject IJSRuntime JS
+@inject ILogStockService _logStockService
+@layout MainLayout
+
+<style>
+    .log-stock-page::-webkit-scrollbar { width: 5px; height: 5px; }
+    .log-stock-page::-webkit-scrollbar-track { background: transparent; }
+    .log-stock-page::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+    .glass {
+        background: rgba(255,255,255,0.75);
+        backdrop-filter: blur(14px);
+        border: 1px solid rgba(255,255,255,0.7);
+        box-shadow: 0 4px 24px rgba(15,23,42,0.05);
+    }
+    .log-stock-page tbody tr { transition: all 0.18s ease; }
+    .log-stock-page tbody tr:hover {
+        background: linear-gradient(135deg, #f0f9ff 0%, #ecfdf5 100%);
+        box-shadow: inset 3px 0 0 #0ea5e9;
+    }
+    .btn-shine { position: relative; overflow: hidden; }
+    .btn-shine::after {
+        content: ''; position: absolute; top: -50%; left: -60%;
+        width: 40%; height: 200%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transform: skewX(-20deg); transition: left 0.5s ease;
+    }
+    .btn-shine:hover::after { left: 120%; }
+    .field:focus {
+        border-color: #0ea5e9;
+        box-shadow: 0 0 0 3px rgba(14,165,233,0.1);
+    }
+    .dot-bg {
+        background-image: radial-gradient(circle, #e2e8f0 0.8px, transparent 0.8px);
+        background-size: 22px 22px;
+    }
+    .orb-a {
+        position: fixed; width: 380px; height: 380px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(14,165,233,0.07), transparent 70%);
+        top: -90px; right: -90px; pointer-events: none;
+    }
+    .orb-b {
+        position: fixed; width: 320px; height: 320px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(16,185,129,0.05), transparent 70%);
+        bottom: -70px; left: -70px; pointer-events: none;
+    }
+    .page-btn { transition: all 0.15s ease; }
+    .page-btn:not(:disabled):hover {
+        background: #0ea5e9; color: white; border-color: #0ea5e9; transform: scale(1.05);
+    }
+    .page-btn:not(:disabled):active { transform: scale(0.97); }
+</style>
+
+<div class="log-stock-page relative min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/30 to-emerald-50/20 text-gray-900 font-sans">
+
+    <div class="orb-a"></div>
+    <div class="orb-b"></div>
+    <div class="dot-bg absolute inset-0 opacity-35 pointer-events-none"></div>
+
+    <div class="relative z-10 max-w-[90rem] mx-auto p-6 lg:p-10 space-y-7">
+
+        <!-- HEADER -->
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-500 to-cyan-400 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/>
+                        </svg>
+                    </div>
+                    <span class="text-[11px] font-semibold text-sky-600 uppercase tracking-widest">System Logs</span>
+                </div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-slate-800 tracking-tight">Log Stock</h1>
+                <p class="text-sm text-slate-400">Riwayat perubahan stok produk</p>
+            </div>
+            
+            <div class="flex gap-3">
+                <button @onclick="ExportExcel"
+                        class="flex items-center gap-2 px-5 py-2.5 text-sm font-medium border border-gray-200 text-gray-700 bg-white rounded-xl hover:bg-gray-50 hover:shadow-sm transition-all duration-200">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    Export
+                </button>
+            </div>
+        </div>
+
+        <!-- FILTER -->
+        <div class="glass rounded-2xl p-5 flex flex-wrap items-end gap-4">
+            <div class="flex flex-col w-full sm:w-auto">
+                <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Period Month</label>
+                <select @bind="month" class="field w-full sm:w-40 px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-white/80 focus:outline-none transition-all appearance-none cursor-pointer">
+                    @foreach (var m in monthList)
+                    {
+                        <option value="@m.Key">@m.Value</option>
+                    }
+                </select>
+            </div>
+
+            <div class="flex flex-col w-full sm:w-auto">
+                <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Period Year</label>
+                <select @bind="year" class="field w-full sm:w-32 px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-white/80 focus:outline-none transition-all appearance-none cursor-pointer">
+                    @foreach (var y in yearList)
+                    {
+                        <option value="@y">@y</option>
+                    }
+                </select>
+            </div>
+
+            <button @onclick="LoadData"
+                    class="btn-shine px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-sky-500 to-cyan-500 rounded-xl hover:from-sky-600 hover:to-cyan-600 hover:shadow-lg hover:shadow-sky-200/50 transition-all">
+                Apply Filter
+            </button>
+        </div>
+
+        <!-- TABLE -->
+        <div class="glass rounded-2xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100/80 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-1.5 h-5 rounded-full bg-gradient-to-b from-sky-400 to-cyan-400"></div>
+                    <h2 class="text-sm font-semibold text-slate-700">Stock History</h2>
+                    <span class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">@totalCount data</span>
+                </div>
+                <div class="flex items-center gap-1.5 text-xs text-slate-400">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
+                    Halaman @currentPage dari @totalPages
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-50/70 text-slate-400 text-[11px] uppercase tracking-wider">
+                        <tr>
+                            <th class="px-6 py-3.5 text-left font-semibold">Product Name</th>
+                            <th class="px-6 py-3.5 text-left font-semibold">Store Name</th>
+                            <th class="px-6 py-3.5 text-left font-semibold">Stock Date</th>
+                            <th class="px-6 py-3.5 text-center font-semibold">Stock Before</th>
+                            <th class="px-6 py-3.5 text-center font-semibold">Stock After</th>
+                            <th class="px-6 py-3.5 text-center font-semibold">Month</th>
+                            <th class="px-6 py-3.5 text-center font-semibold">Year</th>
+                            <th class="px-6 py-3.5 text-left font-semibold">Created Date</th>
+                            <th class="px-6 py-3.5 text-left font-semibold">Created By</th>
+                        </tr>
+                    </thead>
+
+                    <tbody class="divide-y divide-slate-100/80">
+                        @if (logStockList != null && logStockList.Any())
+                        {
+                            @foreach (var data in logStockList)
+                            {
+                                string StockDate = data.StockDate != null ? Convert.ToDateTime(data.StockDate).ToString("yyyy-MM-dd HH:mm:ss") : "-";
+                                string CreatedDate = data.CreatedDate != null ? Convert.ToDateTime(data.CreatedDate).ToString("yyyy-MM-dd HH:mm:ss") : "-";
+
+                                <tr>
+                                    <td class="px-6 py-4 text-sm text-slate-700 font-medium whitespace-nowrap">@data.ProductName</td>
+                                    <td class="px-6 py-4 text-sm text-slate-500 whitespace-nowrap">@data.StoreName</td>
+
+                                    <td class="px-6 py-4">
+                                        @if (StockDate != "-")
+                                        {
+                                            <div class="flex flex-col">
+                                                <span class="font-medium text-slate-800 text-sm whitespace-nowrap">@StockDate.Split(' ')[0]</span>
+                                                <span class="text-xs text-slate-400 font-mono tracking-wide">@StockDate.Split(' ')[1]</span>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-slate-400 italic">-</span>
+                                        }
+                                    </td>
+                                    
+                                    <td class="px-6 py-4 text-center text-sm text-slate-600 font-mono">@data.StockBefore</td>
+                                    <td class="px-6 py-4 text-center text-sm text-slate-600 font-mono">@data.StockAfter</td>
+                                    <td class="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">@data.Month</td>
+                                    <td class="px-6 py-4 text-center text-sm text-slate-500 whitespace-nowrap">@data.Year</td>
+
+                                    <td class="px-6 py-4">
+                                        @if (CreatedDate != "-")
+                                        {
+                                            <div class="flex flex-col">
+                                                <span class="font-medium text-slate-800 text-sm whitespace-nowrap">@CreatedDate.Split(' ')[0]</span>
+                                                <span class="text-xs text-slate-400 font-mono tracking-wide">@CreatedDate.Split(' ')[1]</span>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-slate-400 italic">-</span>
+                                        }
+                                    </td>
+                                    
+                                    <td class="px-6 py-4 text-sm text-slate-500 whitespace-nowrap">@data.CreatedBy</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="9" class="px-6 py-16 text-center">
+                                    <div class="flex flex-col items-center gap-3">
+                                        <div class="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center">
+                                            <svg class="w-7 h-7 text-slate-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-slate-500">No log data available</p>
+                                            <p class="text-xs text-slate-400 mt-0.5">Coba ubah filter periode di atas</p>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- PAGINATION -->
+            <div class="px-6 py-4 border-t border-slate-100/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-slate-500">
+                <div class="flex items-center gap-2">
+                    <button @onclick="PrevPage"
+                            disabled="@(currentPage == 1)"
+                            class="page-btn w-9 h-9 flex items-center justify-center border border-slate-200 rounded-lg text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+                    </button>
+                    <span class="px-1">
+                        <span class="text-slate-900 font-semibold">@currentPage</span>
+                        <span class="text-slate-400">/ @totalPages</span>
+                    </span>
+                    <button @onclick="NextPage"
+                            disabled="@(currentPage == totalPages)"
+                            class="page-btn w-9 h-9 flex items-center justify-center border border-slate-200 rounded-lg text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+                    </button>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-slate-400">Ke halaman</span>
+                    <input type="number" min="1" max="@totalPages" @bind="currentPage"
+                           class="field w-16 px-3 py-2 text-sm text-center border border-slate-200 rounded-lg bg-white/80 focus:outline-none transition-all" />
+                    <button @onclick="GoPage"
+                            class="px-4 py-2 text-sm font-semibold text-white bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors">
+                        Go
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="text-center py-3">
+            <p class="text-xs text-slate-400">Menampilkan @(logStockList?.Count ?? 0) dari @totalCount data log</p>
+        </div>
+    </div>
+
+    <!-- LOADING -->
+    @if (isLoading)
+    {
+        <div class="fixed inset-0 z-50 bg-white/60 backdrop-blur-sm flex items-center justify-center">
+            <div class="flex flex-col items-center gap-3 bg-white px-8 py-6 rounded-2xl shadow-lg border border-slate-100">
+                <div class="relative w-10 h-10">
+                    <div class="absolute inset-0 rounded-full border-4 border-slate-200"></div>
+                    <div class="absolute inset-0 rounded-full border-4 border-transparent border-t-sky-500 animate-spin"></div>
+                </div>
+                <p class="text-sm font-medium text-slate-600">Memuat data...</p>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<VLogStock> logStockList = new();
+
+    private int currentPage = 1;
+    private int pageSize = 50;
+    private int totalCount = 0;
+    private int pageNumber = 1;
+    private int totalPages = 0;
+    private string token = "";
+
+    private int month = 0;
+    private int year = 0;
+
+    private bool isLoading = false;
+
+    private List<int> yearList = new();
+    private Dictionary<int, string> monthList = new()
+    {
+        { 1, "January" }, { 2, "February" }, { 3, "March" },
+        { 4, "April" }, { 5, "May" }, { 6, "June" },
+        { 7, "July" }, { 8, "August" }, { 9, "September" },
+        { 10, "October" }, { 11, "November" }, { 12, "December" }
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        int currentYear = DateTime.Now.Year;
+        month = DateTime.Now.Month; 
+        for (int i = currentYear - 2; i <= currentYear + 2; i++)
+        {
+            yearList.Add(i);
+        }
+        year = currentYear;
+
+        isLoading = true;
+        await LoadData();
+        isLoading = false;
+    }
+
+    private async Task LoadData()
+    {
+        var result = await _logStockService.GetPaged(currentPage, pageSize, month, year);
+        pageNumber = result.PageNumber;
+        pageSize = result.PageSize;
+        totalCount = result.TotalCount;
+        totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+        logStockList = result.Items;
+    }
+
+    private async Task ExportExcel()
+    {
+        var result = await _logStockService.LogStockExport(month, year);
+        var fileByte = _logStockService.GenerateExportLogStock(result.ToList());
+        var fileBase64 = Convert.ToBase64String(fileByte);
+
+        await JS.InvokeVoidAsync("downloadFile", "LogStock.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileBase64);
+    }
+
+    void Clear()
+    {
+        List<LogStock> LogStock = new();
+        List<VLogStock> VLogStock = new();
+    }
+
+    async void NextPage() { if (currentPage < totalPages) { currentPage++; await LoadData(); } }
+    async void PrevPage() { if (currentPage > 1) { currentPage--; await LoadData(); } }
+
+    async void GoPage()
+    {
+        isLoading = true;
+        await LoadData();
+        isLoading = false;
+    }
+}

@@ -1,0 +1,4 @@
+E:\FMCG_Net\WEB_FMCG\WEB_FMCG\WEB_FMCG\obj\Release\net8.0\browser-wasm\PubTmp\Out\efpt.config.json
+E:\FMCG_Net\WEB_FMCG\WEB_FMCG\WEB_FMCG\obj\Release\net8.0\browser-wasm\PubTmp\Out\package-lock.json
+E:\FMCG_Net\WEB_FMCG\WEB_FMCG\WEB_FMCG\obj\Release\net8.0\browser-wasm\PubTmp\Out\emcc-props.json
+E:\FMCG_Net\WEB_FMCG\WEB_FMCG\WEB_FMCG\obj\Release\net8.0\browser-wasm\PubTmp\Out\web.config

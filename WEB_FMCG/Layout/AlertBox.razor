@@ -1,0 +1,79 @@
+﻿@if (IsVisible)
+{
+    <div class="mb-4 px-5 py-3 rounded-xl border flex items-center justify-between
+                    shadow-lg backdrop-blur-sm animate-fade-in
+                    @AlertStyle">
+
+        <div class="flex items-center gap-3">
+            <span class="text-lg">
+                @Icon
+            </span>
+
+            <span class="text-sm font-medium tracking-wide">
+                @Message
+            </span>
+        </div>
+
+        <button @onclick="Close"
+                class="text-white/60 hover:text-white transition">
+            ✕
+        </button>
+    </div>
+}
+
+<style>
+    @@keyframes fade-in {
+        from {
+            opacity: 0;
+            transform: translateY(-8px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-in {
+        animation: fade-in 0.25s ease-out;
+    }
+</style>
+
+@code {
+    [Parameter] public string Message { get; set; }
+    [Parameter] public string Type { get; set; } = "success";
+    [Parameter] public bool AutoClose { get; set; } = true;
+    [Parameter] public int Duration { get; set; } = 3000;
+
+    public bool IsVisible { get; set; } = true;
+
+    string AlertStyle => Type switch
+    {
+        "success" => "bg-emerald-500/10 border-emerald-500/30 text-emerald-300",
+        "error" => "bg-red-500/10 border-red-500/30 text-red-300",
+        "warning" => "bg-amber-500/10 border-amber-500/30 text-amber-300",
+        _ => "bg-indigo-500/10 border-indigo-500/30 text-indigo-300"
+    };
+
+    string Icon => Type switch
+    {
+        "success" => "✔",
+        "error" => "✖",
+        "warning" => "⚠",
+        _ => "ℹ"
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AutoClose)
+        {
+            await Task.Delay(Duration);
+            IsVisible = false;
+        }
+    }
+
+    void Close()
+    {
+        IsVisible = false;
+    }
+}

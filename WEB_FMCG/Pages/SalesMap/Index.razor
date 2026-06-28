@@ -1,0 +1,63 @@
+﻿@page "/sales-map"
+@inject SalesTrackingService _salesTrackingService
+@inject IJSRuntime JS
+
+<h3>📍 Sales Tracking Realtime</h3>
+
+<div id="map" style="height:500px; border-radius:10px;"></div>
+
+<div class="mt-3">
+    <b>Total Sales Aktif:</b> @salesList.Count
+</div>
+
+<ul>
+    @foreach (var s in salesList)
+    {
+        <li>@s.SalesId - @s.Latitude , @s.Longitude (@s.Activity)</li>
+    }
+</ul>
+
+@code {
+    private List<VSalesTracking> salesList = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // init map
+            await JS.InvokeVoidAsync("leafletMap.init");
+
+            // subscribe realtime
+            _salesTrackingService.OnSalesReceived += async (data) =>
+            {
+                if (data == null) return;
+
+                // update list (hindari duplicate)
+                var existing = salesList
+                    .FirstOrDefault(x => x.SalesId == data.SalesId);
+
+                if (existing != null)
+                {
+                    existing.Latitude = data.Latitude;
+                    existing.Longitude = data.Longitude;
+                    existing.Activity = data.Activity;
+                }
+                else
+                {
+                    salesList.Add(data);
+                }
+
+                // update marker di map
+                await JS.InvokeVoidAsync("leafletMap.updateMarker",
+                    data.SalesId,
+                    data.Latitude,
+                    data.Longitude,
+                    data.Activity);
+
+                await InvokeAsync(StateHasChanged);
+            };
+
+            await _salesTrackingService.StartAsync();
+        }
+    }
+}

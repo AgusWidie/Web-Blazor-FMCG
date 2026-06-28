@@ -1,0 +1,35 @@
+﻿@inject IJSRuntime JSRuntime
+
+<select id="@Id" class="w-full rounded-lg border-gray-300 shadow-sm px-3 py-2 border">
+    @ChildContent
+</select>
+
+@code {
+    [Parameter] public string Id { get; set; } = "select2-element";
+    [Parameter] public RenderFragment ChildContent { get; set; }
+
+    // Properti untuk Binding
+    [Parameter] public string Value { get; set; }
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+    private DotNetObjectReference<Select2>? objRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            objRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("initSelect2", Id, objRef);
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnSelectChanged(string newValue)
+    {
+        Value = newValue;
+        // Memicu update ke variabel di halaman pemanggil
+        await ValueChanged.InvokeAsync(Value);
+    }
+
+    public void Dispose() => objRef?.Dispose();
+}

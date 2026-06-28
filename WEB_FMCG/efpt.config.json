@@ -1,0 +1,481 @@
+﻿{
+   "CodeGenerationMode": 4,
+   "ContextClassName": "mondelez_dbContext",
+   "ContextNamespace": null,
+   "FilterSchemas": false,
+   "IncludeConnectionString": false,
+   "IrregularWords": null,
+   "MinimumProductVersion": "2.6.1248",
+   "ModelNamespace": null,
+   "OutputContextPath": null,
+   "OutputPath": "Models",
+   "PluralRules": null,
+   "PreserveCasingWithRegex": true,
+   "ProjectRootNamespace": "WEB_FMCG",
+   "Schemas": null,
+   "SelectedHandlebarsLanguage": 2,
+   "SelectedToBeGenerated": 2,
+   "SingularRules": null,
+   "T4TemplatePath": null,
+   "Tables": [
+      {
+         "Name": "absent_type",
+         "ObjectType": 0
+      },
+      {
+         "Name": "api_logs",
+         "ObjectType": 0
+      },
+      {
+         "Name": "api_logs_attendance",
+         "ObjectType": 0
+      },
+      {
+         "Name": "api_logs_photo_product",
+         "ObjectType": 0
+      },
+      {
+         "Name": "api_token",
+         "ObjectType": 0
+      },
+      {
+         "Name": "approval_type",
+         "ObjectType": 0
+      },
+      {
+         "Name": "area",
+         "ObjectType": 0
+      },
+      {
+         "Name": "attendance",
+         "ObjectType": 0
+      },
+      {
+         "Name": "attendance_leave",
+         "ObjectType": 0
+      },
+      {
+         "Name": "attendance_log",
+         "ObjectType": 0
+      },
+      {
+         "Name": "attendance_overtime",
+         "ObjectType": 0
+      },
+      {
+         "Name": "attendance_permit",
+         "ObjectType": 0
+      },
+      {
+         "Name": "cache",
+         "ObjectType": 0
+      },
+      {
+         "Name": "cache_locks",
+         "ObjectType": 0
+      },
+      {
+         "Name": "city",
+         "ObjectType": 0
+      },
+      {
+         "Name": "department",
+         "ObjectType": 0
+      },
+      {
+         "Name": "division",
+         "ObjectType": 0
+      },
+      {
+         "Name": "failed_jobs",
+         "ObjectType": 0
+      },
+      {
+         "Name": "job_batches",
+         "ObjectType": 0
+      },
+      {
+         "Name": "jobs",
+         "ObjectType": 0
+      },
+      {
+         "Name": "label_coc_cashier",
+         "ObjectType": 0
+      },
+      {
+         "Name": "label_home_self",
+         "ObjectType": 0
+      },
+      {
+         "Name": "label_secondary_display",
+         "ObjectType": 0
+      },
+      {
+         "Name": "location",
+         "ObjectType": 0
+      },
+      {
+         "Name": "log_stock",
+         "ObjectType": 0
+      },
+      {
+         "Name": "login_device",
+         "ObjectType": 0
+      },
+      {
+         "Name": "login_log",
+         "ObjectType": 0
+      },
+      {
+         "Name": "mechanisme",
+         "ObjectType": 0
+      },
+      {
+         "Name": "menu_child",
+         "ObjectType": 0
+      },
+      {
+         "Name": "menu_header",
+         "ObjectType": 0
+      },
+      {
+         "Name": "menu_role",
+         "ObjectType": 0
+      },
+      {
+         "Name": "migrations",
+         "ObjectType": 0
+      },
+      {
+         "Name": "order_detail",
+         "ObjectType": 0
+      },
+      {
+         "Name": "order_header",
+         "ObjectType": 0
+      },
+      {
+         "Name": "order_products",
+         "ObjectType": 0
+      },
+      {
+         "Name": "password_reset_tokens",
+         "ObjectType": 0
+      },
+      {
+         "Name": "personal_access_tokens",
+         "ObjectType": 0
+      },
+      {
+         "Name": "photo_product_coc_cashier",
+         "ObjectType": 0
+      },
+      {
+         "Name": "photo_product_home_shelf",
+         "ObjectType": 0
+      },
+      {
+         "Name": "photo_product_price_competitor",
+         "ObjectType": 0
+      },
+      {
+         "Name": "photo_product_secondary_display",
+         "ObjectType": 0
+      },
+      {
+         "Name": "photo_promotion",
+         "ObjectType": 0
+      },
+      {
+         "Name": "position",
+         "ObjectType": 0
+      },
+      {
+         "Name": "product",
+         "ObjectType": 0
+      },
+      {
+         "Name": "product_category",
+         "ObjectType": 0
+      },
+      {
+         "Name": "product_pricing",
+         "ObjectType": 0
+      },
+      {
+         "Name": "product_stock",
+         "ObjectType": 0
+      },
+      {
+         "Name": "product_variant",
+         "ObjectType": 0
+      },
+      {
+         "Name": "products",
+         "ObjectType": 0
+      },
+      {
+         "Name": "region",
+         "ObjectType": 0
+      },
+      {
+         "Name": "region_store",
+         "ObjectType": 0
+      },
+      {
+         "Name": "rental_display",
+         "ObjectType": 0
+      },
+      {
+         "Name": "role",
+         "ObjectType": 0
+      },
+      {
+         "Name": "sales",
+         "ObjectType": 0
+      },
+      {
+         "Name": "sales_structure",
+         "ObjectType": 0
+      },
+      {
+         "Name": "sessions",
+         "ObjectType": 0
+      },
+      {
+         "Name": "store",
+         "ObjectType": 0
+      },
+      {
+         "Name": "store_visit",
+         "ObjectType": 0
+      },
+      {
+         "Name": "submission_leave",
+         "ObjectType": 0
+      },
+      {
+         "Name": "survey",
+         "ObjectType": 0
+      },
+      {
+         "Name": "survey_question",
+         "ObjectType": 0
+      },
+      {
+         "Name": "survey_response",
+         "ObjectType": 0
+      },
+      {
+         "Name": "ticketing_device",
+         "ObjectType": 0
+      },
+      {
+         "Name": "type_display",
+         "ObjectType": 0
+      },
+      {
+         "Name": "type_promotion",
+         "ObjectType": 0
+      },
+      {
+         "Name": "user_acces",
+         "ObjectType": 0
+      },
+      {
+         "Name": "users",
+         "ObjectType": 0
+      },
+      {
+         "Name": "v_area",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_attendance",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_attendance_leave",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_attendance_overtime",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_attendance_permit",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_city",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_dashboard_attendance",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_dashboard_store_visit_monthly",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_dashboard_today_activities",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_dashboard_total_attendance",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_dashboard_total_store_visit",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_division",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_log_stock",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_login",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_menu_role",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_order_products",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_photo_product_coc_cashier",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_photo_product_home_self",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_photo_product_price_competitor",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_photo_product_secondary_display",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_photo_promotion",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_position",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_product",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_product_pricing",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_product_stock",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_product_variant",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_region_store",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_rental_display",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_role_access",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_role_menu_child",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_role_menu_header",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_role_menu_user",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_sales",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_sales_structure",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_sales_tracking",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_store",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_store_visit",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_submission_leave",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_survey_question",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_survey_response",
+         "ObjectType": 3
+      },
+      {
+         "Name": "v_user_role_access",
+         "ObjectType": 3
+      }
+   ],
+   "UiHint": null,
+   "UncountableWords": null,
+   "UseAsyncStoredProcedureCalls": true,
+   "UseBoolPropertiesWithoutDefaultSql": false,
+   "UseDatabaseNames": false,
+   "UseDatabaseNamesForRoutines": true,
+   "UseDateOnlyTimeOnly": true,
+   "UseDbContextSplitting": false,
+   "UseDecimalDataAnnotationForSprocResult": true,
+   "UseFluentApiOnly": true,
+   "UseHandleBars": false,
+   "UseHierarchyId": false,
+   "UseInflector": true,
+   "UseInternalAccessModifiersForSprocsAndFunctions": false,
+   "UseLegacyPluralizer": false,
+   "UseManyToManyEntity": false,
+   "UseNoDefaultConstructor": false,
+   "UseNoNavigations": false,
+   "UseNoObjectFilter": false,
+   "UseNodaTime": false,
+   "UseNullableReferences": false,
+   "UsePrefixNavigationNaming": false,
+   "UseSchemaFolders": false,
+   "UseSchemaNamespaces": false,
+   "UseSpatial": false,
+   "UseT4": false,
+   "UseT4Split": false
+}
